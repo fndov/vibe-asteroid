@@ -34,7 +34,7 @@ const SCORE_MEDIUM_ASTEROID: u32 = 50;
 const SCORE_SMALL_ASTEROID: u32 = 100;
 
 const BULLET_COOLDOWN: u64 = 10; // Frames between shots
-const MAX_HEALTH: u32 = 3;
+const MAX_HEALTH: u32 = 1;
 const UPGRADE_COLLECTION_RADIUS: f64 = 2.0; // Ship can collect upgrade within this radius
 const TERMINAL_ASPECT_RATIO_COMPENSATION: f64 = 2.0; // Adjust this based on terminal character aspect ratio (height/width)
 
@@ -273,6 +273,11 @@ struct Ship {
     shape: Vec<(f64, f64)>, // Relative coordinates for diamond shape
     fire_rate_multiplier: f64,
     bullet_speed_multiplier: f64,
+    bullet_size_multiplier: f64,
+    booster_multiplier: f64,
+    shield_count: u32,
+    ship_size_multiplier: f64,
+    max_health: u32,
 }
 
 impl Ship {
@@ -292,11 +297,22 @@ impl Ship {
             ],
             fire_rate_multiplier: 1.0,
             bullet_speed_multiplier: 1.0,
+            bullet_size_multiplier: 1.0,
+            booster_multiplier: 1.0,
+            shield_count: 0,
+            ship_size_multiplier: 1.0,
+            max_health: MAX_HEALTH,
         }
     }
 
-    fn get_absolute_coords(&self) -> Vec<(u16, u16)> {
+    fn get_scaled_shape(&self) -> Vec<(f64, f64)> {
         self.shape.iter().map(|&(dx, dy)| {
+            (dx * self.ship_size_multiplier, dy * self.ship_size_multiplier)
+        }).collect()
+    }
+
+    fn get_absolute_coords(&self) -> Vec<(u16, u16)> {
+        self.get_scaled_shape().iter().map(|&(dx, dy)| {
             // Rotate the relative coordinates
             let rotated_x = dx * self.angle.cos() - dy * self.angle.sin();
             let rotated_y = dx * self.angle.sin() + dy * self.angle.cos();
@@ -308,7 +324,7 @@ impl Ship {
 
     fn draw(&self, game_grid: &mut GameGrid) {
         let draw_angle = self.angle + std::f64::consts::FRAC_PI_2;
-        for &(dx, dy) in &self.shape {
+        for &(dx, dy) in &self.get_scaled_shape() {
             let rotated_x = dx * draw_angle.cos() - dy * draw_angle.sin();
             let rotated_y = dx * draw_angle.sin() + dy * draw_angle.cos();
 
@@ -324,6 +340,16 @@ impl Ship {
         let aim_x = (self.position.x + self.angle.cos() * aiming_distance * TERMINAL_ASPECT_RATIO_COMPENSATION).round() as u16;
         let aim_y = (self.position.y + self.angle.sin() * aiming_distance).round() as u16;
         game_grid.set_char(aim_x, aim_y, '●');
+
+        // Draw shield
+        if self.shield_count > 0 {
+            let shield_char = '#';
+            // For simplicity, let's draw the shield behind the ship for now
+            // We can make this more sophisticated later to cover a specific side
+            let shield_x = (self.position.x - self.angle.cos() * 2.0).round() as u16;
+            let shield_y = (self.position.y - self.angle.sin() * 2.0).round() as u16;
+            game_grid.set_char(shield_x, shield_y, shield_char);
+        }
     }
 
     fn update(&mut self, terminal_width: u16, terminal_height: u16) {
@@ -339,7 +365,7 @@ impl Ship {
     }
 
     fn thrust(&mut self) {
-        let thrust_vector = Vector2D::new(self.angle.cos(), self.angle.sin()).scale(self.thrust_power);
+        let thrust_vector = Vector2D::new(self.angle.cos(), self.angle.sin()).scale(self.thrust_power * self.booster_multiplier);
         self.velocity = self.velocity.add(thrust_vector);
         info!("Thrusting: Angle = {}, Thrust Vector = ({}, {})", self.angle, thrust_vector.x, thrust_vector.y);
     }
@@ -470,20 +496,31 @@ struct Bullet {
     velocity: Vector2D,
     lifetime: u32,
     display_char: char,
+    size: f64,
 }
 
 impl Bullet {
-    fn new(position: Vector2D, velocity: Vector2D) -> Self {
+    fn new(position: Vector2D, velocity: Vector2D, size: f64) -> Self {
         Bullet {
             position,
             velocity,
             lifetime: BULLET_LIFETIME, // Bullet lasts for 30 frames
-            display_char: '*'
+            display_char: '*',
+            size,
         }
     }
 
     fn draw(&self, game_grid: &mut GameGrid) {
-        game_grid.set_char(self.position.x.round() as u16, self.position.y.round() as u16, self.display_char);
+        let char_to_draw = match self.lifetime {
+            20..=30 => '*',
+            10..=19 => '+',
+            _ => '.',
+        };
+        for i in 0..(self.size.round() as u16) {
+            for j in 0..(self.size.round() as u16) {
+                game_grid.set_char(self.position.x.round() as u16 + i, self.position.y.round() as u16 + j, char_to_draw);
+            }
+        }
     }
 
     fn update(&mut self, terminal_width: u16, terminal_height: u16) {
@@ -563,9 +600,17 @@ impl Particle {
 
 #[derive(Debug)]
 enum UpgradeType {
+    // Beam Upgrades
     FireRate,
     BulletSpeed,
+    BulletSize,
+    // Ship Upgrades
+    Booster,
+    Shield,
+    ShipSize,
+    // Health Upgrades
     Health,
+    HealthMax,
 }
 
 struct Upgrade {
@@ -577,9 +622,14 @@ struct Upgrade {
 impl Upgrade {
     fn new(position: Vector2D, upgrade_type: UpgradeType) -> Self {
         let display_char = match upgrade_type {
-            UpgradeType::FireRate => 'S',
-            UpgradeType::BulletSpeed => 'S',
+            UpgradeType::FireRate => 'B',
+            UpgradeType::BulletSpeed => 'B',
+            UpgradeType::BulletSize => 'B',
+            UpgradeType::Booster => 'S',
+            UpgradeType::Shield => 'S',
+            UpgradeType::ShipSize => 'S',
             UpgradeType::Health => 'H',
+            UpgradeType::HealthMax => 'H',
         };
         Upgrade { position, upgrade_type, display_char }
     }
@@ -736,7 +786,7 @@ fn main() -> io::Result<()> {
     let mut particles: Vec<Particle> = Vec::new();
     let mut upgrade_boxes: Vec<UpgradeBox> = Vec::new();
     let mut upgrades: Vec<Upgrade> = Vec::new();
-    let mut player_health = MAX_HEALTH;
+    let mut player_health = ship.max_health;
     let mut last_shot_frame = 0;
     let mut last_hit_frame = 0;
     let mut rng = rand::thread_rng();
@@ -816,7 +866,7 @@ fn main() -> io::Result<()> {
                             if frame_count - last_shot_frame >= BULLET_COOLDOWN {
                                 let bullet_speed = BULLET_SPEED * ship.bullet_speed_multiplier;
                                 let bullet_velocity = Vector2D::new(ship.angle.cos() * bullet_speed, ship.angle.sin() * bullet_speed);
-                                bullets.push(Bullet::new(ship.position, bullet_velocity));
+                                bullets.push(Bullet::new(ship.position, bullet_velocity, ship.bullet_size_multiplier));
                                 last_shot_frame = frame_count;
                                 info!("Bullet fired.");
                             }
@@ -890,9 +940,14 @@ fn main() -> io::Result<()> {
             }
 
             if collision && frame_count - last_hit_frame > INVINCIBILITY_FRAMES {
-                player_health = player_health.saturating_sub(1);
+                if ship.shield_count > 0 {
+                    ship.shield_count -= 1;
+                    info!("Shield absorbed hit. Shields remaining: {}", ship.shield_count);
+                } else {
+                    player_health = player_health.saturating_sub(1);
+                    info!("Ship hit by asteroid. Health: {}", player_health);
+                }
                 last_hit_frame = frame_count;
-                info!("Ship hit by asteroid. Health: {}", player_health);
                 if player_health == 0 {
                     info!("Ship health reached 0. Game over.");
                     running = false;
@@ -978,10 +1033,15 @@ fn main() -> io::Result<()> {
                         // Spawn upgrades
                         let num_upgrades = rng.gen_range(1..=3);
                         for _ in 0..num_upgrades {
-                            let upgrade_type = match rng.gen_range(0..3) {
+                            let upgrade_type = match rng.gen_range(0..8) { // Updated to include all 8 upgrade types
                                 0 => UpgradeType::FireRate,
                                 1 => UpgradeType::BulletSpeed,
-                                _ => UpgradeType::Health,
+                                2 => UpgradeType::BulletSize,
+                                3 => UpgradeType::Booster,
+                                4 => UpgradeType::Shield,
+                                5 => UpgradeType::ShipSize,
+                                6 => UpgradeType::Health,
+                                _ => UpgradeType::HealthMax,
                             };
                             upgrades.push(Upgrade::new(upgrade_box.position, upgrade_type));
                         }
@@ -1018,20 +1078,45 @@ fn main() -> io::Result<()> {
                 match upgrade.upgrade_type {
                     UpgradeType::FireRate => {
                         ship.fire_rate_multiplier *= 1.1; // Increase fire rate by 10%
-                        player_health = (player_health + 1).min(MAX_HEALTH); // Health bonus for ship upgrade
                         current_banner = Some(("Fire Rate Increased!".to_string(), frame_count + 60)); // Display for 1 second
                         info!("Fire rate increased to {}", ship.fire_rate_multiplier);
                     },
                     UpgradeType::BulletSpeed => {
                         ship.bullet_speed_multiplier *= 1.1; // Increase bullet speed by 10%
-                        player_health = (player_health + 1).min(MAX_HEALTH); // Health bonus for ship upgrade
                         current_banner = Some(("Bullet Speed Increased!".to_string(), frame_count + 60)); // Display for 1 second
                         info!("Bullet speed increased to {}", ship.bullet_speed_multiplier);
                     },
+                    UpgradeType::BulletSize => {
+                        ship.bullet_size_multiplier += 0.5; // Increase bullet size
+                        current_banner = Some(("Bullet Size Increased!".to_string(), frame_count + 60));
+                        info!("Bullet size increased to {}", ship.bullet_size_multiplier);
+                    },
+                    UpgradeType::Booster => {
+                        ship.booster_multiplier *= 1.1; // Increase booster power
+                        current_banner = Some(("Booster Power Increased!".to_string(), frame_count + 60));
+                        info!("Booster power increased to {}", ship.booster_multiplier);
+                    },
+                    UpgradeType::Shield => {
+                        ship.shield_count += 1; // Increase shield count
+                        current_banner = Some(("Shield Added!".to_string(), frame_count + 60));
+                        info!("Shield count increased to {}", ship.shield_count);
+                    },
+                    UpgradeType::ShipSize => {
+                        ship.ship_size_multiplier += 0.2; // Increase ship size
+                        ship.max_health += 1; // Increase max health with ship size
+                        player_health = player_health.min(ship.max_health); // Cap current health at new max
+                        current_banner = Some(("Ship Size Increased!".to_string(), frame_count + 60));
+                        info!("Ship size increased to {}", ship.ship_size_multiplier);
+                    },
                     UpgradeType::Health => {
-                        player_health = (player_health + 1).min(MAX_HEALTH); // Increase health, cap at MAX_HEALTH
+                        player_health = (player_health + 1).min(ship.max_health); // Increase health, cap at max_health
                         current_banner = Some(("Health Restored!".to_string(), frame_count + 60)); // Display for 1 second
                         info!("Health increased to {}", player_health);
+                    },
+                    UpgradeType::HealthMax => {
+                        player_health = ship.max_health; // Max out health
+                        current_banner = Some(("Health Maxed!".to_string(), frame_count + 60));
+                        info!("Health maxed to {}", player_health);
                     },
                 }
                 false // Remove upgrade

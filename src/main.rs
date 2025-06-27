@@ -613,7 +613,7 @@ fn main() -> io::Result<()> {
     // Title Screen (only in non-debug mode)
     if !debug_mode_active {
         let title_art = [
-            r"VIBE-STROID",
+            r"VIBE-ASTEROID",
             r" _   _ _____ _____ ____  _____ ____  _   _ ____  _",
             r"| | | | ____|_   _|  _ \| ____|  _ \| | | |  _ \| |",
             r"| |_| |  _|   | | | |_) |  _| | |_) | |_| | |_) | |",

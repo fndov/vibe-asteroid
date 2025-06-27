@@ -35,6 +35,7 @@ const SCORE_SMALL_ASTEROID: u32 = 100;
 
 const BULLET_COOLDOWN: u64 = 10; // Frames between shots
 const MAX_HEALTH: u32 = 5;
+const UPGRADE_COLLECTION_RADIUS: f64 = 2.0; // Ship can collect upgrade within this radius
 
 const UPGRADE_BOX_SPAWN_RATE: u64 = 60 * 10; // Every 10 seconds
 
@@ -551,6 +552,7 @@ impl Particle {
     }
 }
 
+#[derive(Debug)]
 enum UpgradeType {
     FireRate,
     BulletSpeed,
@@ -566,8 +568,8 @@ struct Upgrade {
 impl Upgrade {
     fn new(position: Vector2D, upgrade_type: UpgradeType) -> Self {
         let display_char = match upgrade_type {
-            UpgradeType::FireRate => 'F',
-            UpgradeType::BulletSpeed => 'B',
+            UpgradeType::FireRate => 'S',
+            UpgradeType::BulletSpeed => 'S',
             UpgradeType::Health => 'H',
         };
         Upgrade { position, upgrade_type, display_char }
@@ -900,9 +902,9 @@ fn main() -> io::Result<()> {
             // Bullet-asteroid collision
             let mut hit_asteroid = false;
             let mut new_asteroids_to_add: Vec<Asteroid> = Vec::new();
+            let bullet_pos = (bullet.position.x.round() as u16, bullet.position.y.round() as u16);
             asteroids.retain_mut(|asteroid| {
                 let asteroid_coords = asteroid.get_absolute_coords();
-                let bullet_pos = (bullet.position.x.round() as u16, bullet.position.y.round() as u16);
 
                 if asteroid_coords.contains(&bullet_pos) {
                     hit_asteroid = true;
@@ -992,15 +994,10 @@ fn main() -> io::Result<()> {
         // Update and draw upgrades (collectible items)
         upgrades.retain_mut(|upgrade| {
             // Check for ship collision with upgrade
-            let ship_coords = ship.get_absolute_coords();
-            let upgrade_pos = (upgrade.position.x.round() as u16, upgrade.position.y.round() as u16);
-
+            let distance = ((ship.position.x - upgrade.position.x).powi(2) + (ship.position.y - upgrade.position.y).powi(2)).sqrt();
             let mut collected = false;
-            for ship_point in &ship_coords {
-                if ship_point.0 == upgrade_pos.0 && ship_point.1 == upgrade_pos.1 {
-                    collected = true;
-                    break;
-                }
+            if distance <= UPGRADE_COLLECTION_RADIUS {
+                collected = true;
             }
 
             if collected {

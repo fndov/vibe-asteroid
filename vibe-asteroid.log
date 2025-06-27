@@ -1,70 +1,165 @@
-[00:00:00.000] (7fcb203c7140) INFO   Starting Vibe-asteroid application.
-[00:00:00.000] (7fcb203c7140) INFO   Attempting to enable raw mode.
-[00:00:00.000] (7fcb203c7140) INFO   Raw mode enabled.
-[00:00:00.000] (7fcb203c7140) INFO   Terminal size: 146x31
-[00:00:00.000] (7fcb203c7140) INFO   Attempting to clear screen and hide cursor.
-[00:00:00.000] (7fcb203c7140) INFO   Screen cleared and cursor hidden.
-[00:00:00.000] (7fcb203c7140) INFO   Title screen displayed. Waiting for key press.
-[00:00:00.508] (7fcb203c7140) INFO   Key pressed. Starting game loop.
-[00:00:00.608] (7fcb203c7140) INFO   Title screen cleared.
-[00:00:00.658] (7fcb203c7140) INFO   New asteroid spawned at x: 145, y: 17.411583925016156
-[00:00:00.659] (7fcb203c7140) INFO   New upgrade box spawned at x: 77.52863246601777, y: 11.779197278519558
-[00:00:00.996] (7fcb203c7140) INFO   Ship rotating left.
-[00:00:01.175] (7fcb203c7140) INFO   Ship rotating left.
-[00:00:01.729] (7fcb203c7140) INFO   Ship rotating right.
-[00:00:01.890] (7fcb203c7140) INFO   Ship rotating right.
-[00:00:02.031] (7fcb203c7140) INFO   Ship rotating right.
-[00:00:02.201] (7fcb203c7140) INFO   Ship rotating right.
-[00:00:02.500] (7fcb203c7140) INFO   Bullet fired.
-[00:00:02.602] (7fcb203c7140) INFO   Bullet hit upgrade box. Hits remaining: 2
-[00:00:02.673] (7fcb203c7140) INFO   Ship rotating left.
-[00:00:02.923] (7fcb203c7140) INFO   Bullet fired.
-[00:00:03.024] (7fcb203c7140) INFO   Bullet hit upgrade box. Hits remaining: 1
-[00:00:03.458] (7fcb203c7140) INFO   Ship rotating left.
-[00:00:03.481] (7fcb203c7140) INFO   Bullet fired.
-[00:00:03.583] (7fcb203c7140) INFO   Bullet hit upgrade box. Hits remaining: 0
-[00:00:03.583] (7fcb203c7140) INFO   Upgrade box destroyed. Spawned 3 upgrades.
-[00:00:04.113] (7fcb203c7140) INFO   Thrusting: Angle = -1.358624806371788, Thrust Vector = (0.010529161039323963, -0.048878796709902576)
-[00:00:04.113] (7fcb203c7140) INFO   Ship thrusting.
-[00:00:04.298] (7fcb203c7140) INFO   Thrusting: Angle = -1.4315905922452954, Thrust Vector = (0.006937828817839581, -0.049516325906657846)
-[00:00:04.298] (7fcb203c7140) INFO   Ship thrusting.
-[00:00:04.480] (7fcb203c7140) INFO   Thrusting: Angle = -1.4794634443569032, Thrust Vector = (0.004560297843692194, -0.049791602540757984)
-[00:00:04.480] (7fcb203c7140) INFO   Ship thrusting.
-[00:00:04.631] (7fcb203c7140) INFO   Ship rotating right.
-[00:00:04.992] (7fcb203c7140) INFO   Thrusting: Angle = -0.9726023105144123, Thrust Vector = (0.028157550535468413, -0.041317700176105435)
-[00:00:04.992] (7fcb203c7140) INFO   Ship thrusting.
-[00:00:05.245] (7fcb203c7140) INFO   New asteroid spawned at x: 79.24548832418795, y: 0
-[00:00:05.280] (7fcb203c7140) INFO   Thrusting: Angle = -0.7843325005887799, Thrust Vector = (0.03539299584670194, -0.03531764212111759)
-[00:00:05.280] (7fcb203c7140) INFO   Ship thrusting.
-[00:00:05.701] (7fcb203c7140) INFO   Ship rotating right.
-[00:00:06.155] (7fcb203c7140) INFO   Thrusting: Angle = 0.009732550076793675, Thrust Vector = (0.049997631955417426, 0.0004866198214445992)
-[00:00:06.155] (7fcb203c7140) INFO   Ship thrusting.
-[00:00:06.316] (7fcb203c7140) INFO   Thrusting: Angle = 0.15398866932061936, Thrust Vector = (0.04940835774071688, 0.007669040706981748)
-[00:00:06.316] (7fcb203c7140) INFO   Ship thrusting.
-[00:00:06.581] (7fcb203c7140) INFO   Ship rotating right.
-[00:00:06.797] (7fcb203c7140) INFO   Ship rotating right.
-[00:00:07.019] (7fcb203c7140) INFO   Thrusting: Angle = 1.4390373372578151, Thrust Vector = (0.006568904408493271, 0.049566616738204734)
-[00:00:07.020] (7fcb203c7140) INFO   Ship thrusting.
-[00:00:07.372] (7fcb203c7140) INFO   Thrusting: Angle = 1.9556101842371576, Thrust Vector = (-0.01876933068056736, 0.04634341620773671)
-[00:00:07.372] (7fcb203c7140) INFO   Ship thrusting.
-[00:00:07.566] (7fcb203c7140) INFO   Thrusting: Angle = 2.1184789850932346, Thrust Vector = (-0.026035511831931646, 0.04268667384148533)
-[00:00:07.566] (7fcb203c7140) INFO   Ship thrusting.
-[00:00:07.732] (7fcb203c7140) INFO   Thrusting: Angle = 2.2253372053349065, Thrust Vector = (-0.030439753690825556, 0.03966637612943577)
-[00:00:07.732] (7fcb203c7140) INFO   Ship thrusting.
-[00:00:07.890] (7fcb203c7140) INFO   Thrusting: Angle = 2.295446883635467, Thrust Vector = (-0.033143692208896146, 0.0374365552202918)
-[00:00:07.890] (7fcb203c7140) INFO   Ship thrusting.
-[00:00:08.044] (7fcb203c7140) INFO   Thrusting: Angle = 2.331694973608839, Thrust Vector = (-0.03447862692098906, 0.03621083105430264)
-[00:00:08.044] (7fcb203c7140) INFO   Ship thrusting.
-[00:00:08.196] (7fcb203c7140) INFO   Upgrade collected: Shield
-[00:00:08.196] (7fcb203c7140) INFO   Shield count increased to 1
-[00:00:08.196] (7fcb203c7140) INFO   Upgrade collected: Health
-[00:00:08.196] (7fcb203c7140) INFO   Health increased to 1
-[00:00:08.196] (7fcb203c7140) INFO   Upgrade collected: Health
-[00:00:08.196] (7fcb203c7140) INFO   Health increased to 1
-[00:00:08.376] (7fcb203c7140) INFO   Thrusting: Angle = 2.382565564465179, Thrust Vector = (-0.036275296337632254, 0.034410795916644595)
-[00:00:08.376] (7fcb203c7140) INFO   Ship thrusting.
-[00:00:09.030] (7fcb203c7140) INFO   Thrusting: Angle = 2.4173488917147137, Thrust Vector = (-0.03745003480950764, 0.03312846046478264)
-[00:00:09.031] (7fcb203c7140) INFO   Ship thrusting.
-[00:00:09.175] (7fcb203c7140) INFO   Thrusting: Angle = 2.42056153749861, Thrust Vector = (-0.0375562713727893, 0.033007976014493935)
-[00:00:09.175] (7fcb203c7140) INFO   Ship thrusting.
-[00:00:09.986] (7fcb203c7140) INFO   New asteroid spawned at x: 131.92262491911035, y: 30
+[00:00:00.000] (7f89f1025140) INFO   Starting Vibe-asteroid application.
+[00:00:00.000] (7f89f1025140) INFO   Attempting to enable raw mode.
+[00:00:00.000] (7f89f1025140) INFO   Raw mode enabled.
+[00:00:00.000] (7f89f1025140) INFO   Terminal size: 146x31
+[00:00:00.000] (7f89f1025140) INFO   Attempting to clear screen and hide cursor.
+[00:00:00.000] (7f89f1025140) INFO   Screen cleared and cursor hidden.
+[00:00:00.000] (7f89f1025140) INFO   Title screen displayed. Waiting for key press.
+[00:00:00.280] (7f89f1025140) INFO   Key pressed. Starting game loop.
+[00:00:00.381] (7f89f1025140) INFO   Title screen cleared.
+[00:00:00.431] (7f89f1025140) INFO   New asteroid spawned at x: 0, y: 29.131502014642894
+[00:00:00.431] (7f89f1025140) INFO   New upgrade box spawned at x: 105.02468001707982, y: 15.48551194658547
+[00:00:00.451] (7f89f1025140) INFO   Thrusting: Angle = -1.5707963267948966, Thrust Vector = (0.000000000000000003061616997868383, -0.05)
+[00:00:00.451] (7f89f1025140) INFO   Ship thrusting.
+[00:00:00.693] (7f89f1025140) INFO   Ship rotating right.
+[00:00:00.856] (7f89f1025140) INFO   Ship rotating right.
+[00:00:01.271] (7f89f1025140) INFO   Thrusting: Angle = -0.21240339862779622, Thrust Vector = (0.048876353912920396, -0.01054049468378744)
+[00:00:01.271] (7f89f1025140) INFO   Ship thrusting.
+[00:00:01.456] (7f89f1025140) INFO   Thrusting: Angle = 0.008245273375538244, Thrust Vector = (0.049998300396303, 0.00041225899753395586)
+[00:00:01.457] (7f89f1025140) INFO   Ship thrusting.
+[00:00:01.962] (7f89f1025140) INFO   Thrusting: Angle = 0.2824245550055391, Thrust Vector = (0.04801912873656297, 0.01393424828906794)
+[00:00:01.962] (7f89f1025140) INFO   Ship thrusting.
+[00:00:02.241] (7f89f1025140) INFO   Thrusting: Angle = 0.3511992318500092, Thrust Vector = (0.04694804117456453, 0.017201204314564535)
+[00:00:02.241] (7f89f1025140) INFO   Ship thrusting.
+[00:00:02.363] (7f89f1025140) INFO   Thrusting: Angle = 0.37233843545723994, Thrust Vector = (0.04657395914581053, 0.018189731429693306)
+[00:00:02.363] (7f89f1025140) INFO   Ship thrusting.
+[00:00:02.513] (7f89f1025140) INFO   Thrusting: Angle = 0.3877489148869112, Thrust Vector = (0.04628812760910875, 0.01890527022930022)
+[00:00:02.513] (7f89f1025140) INFO   Ship thrusting.
+[00:00:02.614] (7f89f1025140) INFO   Bullet fired.
+[00:00:02.831] (7f89f1025140) INFO   Thrusting: Angle = 0.4093759908112633, Thrust Vector = (0.04586846900630848, 0.019901847929710413)
+[00:00:02.831] (7f89f1025140) INFO   Ship thrusting.
+[00:00:02.993] (7f89f1025140) INFO   Thrusting: Angle = 0.41619473078650515, Thrust Vector = (0.045731698203827095, 0.020214148000696888)
+[00:00:02.993] (7f89f1025140) INFO   Ship thrusting.
+[00:00:03.194] (7f89f1025140) INFO   Ship rotating left.
+[00:00:03.385] (7f89f1025140) INFO   Bullet fired.
+[00:00:03.432] (7f89f1025140) INFO   Ship rotating left.
+[00:00:03.840] (7f89f1025140) INFO   Bullet fired.
+[00:00:03.945] (7f89f1025140) INFO   Ship rotating right.
+[00:00:04.178] (7f89f1025140) INFO   Ship rotating right.
+[00:00:04.312] (7f89f1025140) INFO   Bullet fired.
+[00:00:04.631] (7f89f1025140) INFO   Bullet hit upgrade box. Hits remaining: 2
+[00:00:04.719] (7f89f1025140) INFO   Thrusting: Angle = 0.054679058415774646, Thrust Vector = (0.04992527363512291, 0.0027325907959483264)
+[00:00:04.719] (7f89f1025140) INFO   Ship thrusting.
+[00:00:04.792] (7f89f1025140) INFO   Bullet fired.
+[00:00:04.919] (7f89f1025140) INFO   Thrusting: Angle = 0.20805063341815294, Thrust Vector = (0.048921771047817135, 0.010327648209779482)
+[00:00:04.919] (7f89f1025140) INFO   Ship thrusting.
+[00:00:04.942] (7f89f1025140) INFO   New asteroid spawned at x: 107.85678625797281, y: 30
+[00:00:05.119] (7f89f1025140) INFO   Thrusting: Angle = 0.31167388058768697, Thrust Vector = (0.047591080211721905, 0.015332615050324974)
+[00:00:05.119] (7f89f1025140) INFO   Ship thrusting.
+[00:00:05.342] (7f89f1025140) INFO   Bullet fired.
+[00:00:05.474] (7f89f1025140) INFO   Ship rotating left.
+[00:00:05.705] (7f89f1025140) INFO   Thrusting: Angle = -0.06624237352472848, Thrust Vector = (0.049890338807463214, -0.0033096969161133445)
+[00:00:05.705] (7f89f1025140) INFO   Ship thrusting.
+[00:00:05.733] (7f89f1025140) INFO   Bullet fired.
+[00:00:05.896] (7f89f1025140) INFO   Thrusting: Angle = -0.27286226292839477, Thrust Vector = (0.048150174701888676, -0.013474445301295318)
+[00:00:05.896] (7f89f1025140) INFO   Ship thrusting.
+[00:00:05.963] (7f89f1025140) INFO   Bullet hit upgrade box. Hits remaining: 1
+[00:00:06.091] (7f89f1025140) INFO   Thrusting: Angle = -0.4124619499596187, Thrust Vector = (0.04580683440825864, -0.020043301162592276)
+[00:00:06.091] (7f89f1025140) INFO   Ship thrusting.
+[00:00:06.248] (7f89f1025140) INFO   Bullet fired.
+[00:00:06.476] (7f89f1025140) INFO   Thrusting: Angle = -0.5155885432657659, Thrust Vector = (0.04350013467594355, -0.02465234843123011)
+[00:00:06.476] (7f89f1025140) INFO   Ship thrusting.
+[00:00:06.699] (7f89f1025140) INFO   Thrusting: Angle = -0.5414566471083915, Thrust Vector = (0.04284794284856039, -0.025769241231485704)
+[00:00:06.699] (7f89f1025140) INFO   Ship thrusting.
+[00:00:06.760] (7f89f1025140) INFO   Bullet fired.
+[00:00:06.892] (7f89f1025140) INFO   Thrusting: Angle = -0.5534715393368118, Thrust Vector = (0.04253524296486062, -0.02628218228991412)
+[00:00:06.892] (7f89f1025140) INFO   Ship thrusting.
+[00:00:07.244] (7f89f1025140) INFO   Bullet fired.
+[00:00:07.295] (7f89f1025140) INFO   Bullet hit upgrade box. Hits remaining: 0
+[00:00:07.295] (7f89f1025140) INFO   Upgrade box destroyed. Spawned 3 upgrades.
+[00:00:07.683] (7f89f1025140) INFO   Upgrade collected: Shield
+[00:00:07.683] (7f89f1025140) INFO   Shield count increased to 1
+[00:00:07.683] (7f89f1025140) INFO   Upgrade collected: ShipSize
+[00:00:07.683] (7f89f1025140) INFO   Ship size increased to 1.2
+[00:00:07.683] (7f89f1025140) INFO   Upgrade collected: FireRate
+[00:00:07.683] (7f89f1025140) INFO   Fire rate increased to 1.1
+[00:00:07.715] (7f89f1025140) INFO   Bullet fired.
+[00:00:08.194] (7f89f1025140) INFO   Ship rotating left.
+[00:00:08.505] (7f89f1025140) INFO   Ship rotating left.
+[00:00:08.717] (7f89f1025140) INFO   Bullet fired.
+[00:00:09.058] (7f89f1025140) INFO   New asteroid spawned at x: 145, y: 0.36442482179356483
+[00:00:09.066] (7f89f1025140) INFO   Ship rotating left.
+[00:00:09.172] (7f89f1025140) INFO   Bullet fired.
+[00:00:09.260] (7f89f1025140) INFO   Ship rotating left.
+[00:00:09.460] (7f89f1025140) INFO   Thrusting: Angle = -3.5005762144016486, Thrust Vector = (-0.04681272027458688, 0.017566138462772118)
+[00:00:09.460] (7f89f1025140) INFO   Ship thrusting.
+[00:00:09.565] (7f89f1025140) INFO   Bullet fired.
+[00:00:09.615] (7f89f1025140) INFO   Thrusting: Angle = -3.8686249110536863, Thrust Vector = (-0.037357510763188766, 0.03323276078778643)
+[00:00:09.615] (7f89f1025140) INFO   Ship thrusting.
+[00:00:09.811] (7f89f1025140) INFO   Thrusting: Angle = -4.156171127513868, Thrust Vector = (-0.026398898143324676, 0.04246290353730382)
+[00:00:09.811] (7f89f1025140) INFO   Ship thrusting.
+[00:00:09.989] (7f89f1025140) INFO   Bullet fired.
+[00:00:10.093] (7f89f1025140) INFO   Ship rotating right.
+[00:00:10.500] (7f89f1025140) INFO   Bullet fired.
+[00:00:10.572] (7f89f1025140) INFO   Thrusting: Angle = -3.8223739048138654, Thrust Vector = (-0.03885406180920521, 0.03147001558510039)
+[00:00:10.572] (7f89f1025140) INFO   Ship thrusting.
+[00:00:10.693] (7f89f1025140) INFO   Thrusting: Angle = -3.754196381170725, Thrust Vector = (-0.04090768251832642, 0.028749982799643744)
+[00:00:10.694] (7f89f1025140) INFO   Ship thrusting.
+[00:00:10.857] (7f89f1025140) INFO   Thrusting: Angle = -3.6911251024708776, Thrust Vector = (-0.042638440593333854, 0.026114428651010924)
+[00:00:10.857] (7f89f1025140) INFO   Ship thrusting.
+[00:00:10.915] (7f89f1025140) INFO   Bullet fired.
+[00:00:11.643] (7f89f1025140) INFO   Ship rotating right.
+[00:00:12.119] (7f89f1025140) INFO   Thrusting: Angle = -2.926471853554353, Thrust Vector = (-0.04884753073508444, -0.010673272276344396)
+[00:00:12.119] (7f89f1025140) INFO   Ship thrusting.
+[00:00:12.271] (7f89f1025140) INFO   Thrusting: Angle = -2.83008378580254, Thrust Vector = (-0.04759360964152375, -0.0153247617041916)
+[00:00:12.271] (7f89f1025140) INFO   Ship thrusting.
+[00:00:12.426] (7f89f1025140) INFO   Thrusting: Angle = -2.7409148286498115, Thrust Vector = (-0.04603984124847044, -0.019502128545767522)
+[00:00:12.426] (7f89f1025140) INFO   Ship thrusting.
+[00:00:12.576] (7f89f1025140) INFO   Thrusting: Angle = -2.6948127146471297, Thrust Vector = (-0.04509215236195182, -0.021603189472078496)
+[00:00:12.576] (7f89f1025140) INFO   Ship thrusting.
+[00:00:12.745] (7f89f1025140) INFO   Thrusting: Angle = -2.6521634788647463, Thrust Vector = (-0.04413006799986114, -0.02350610768135873)
+[00:00:12.745] (7f89f1025140) INFO   Ship thrusting.
+[00:00:12.901] (7f89f1025140) INFO   Thrusting: Angle = -2.6241813152679248, Thrust Vector = (-0.043455126255627564, -0.02473159926303732)
+[00:00:12.901] (7f89f1025140) INFO   Ship thrusting.
+[00:00:13.057] (7f89f1025140) INFO   Thrusting: Angle = -2.6058222177320496, Thrust Vector = (-0.04299377870898352, -0.025525183492444398)
+[00:00:13.057] (7f89f1025140) INFO   Ship thrusting.
+[00:00:13.218] (7f89f1025140) INFO   Thrusting: Angle = -2.5937768138387622, Thrust Vector = (-0.042683206015635036, -0.026041196674247848)
+[00:00:13.219] (7f89f1025140) INFO   Ship thrusting.
+[00:00:13.320] (7f89f1025140) INFO   New asteroid spawned at x: 71.04032990450915, y: 30
+[00:00:13.442] (7f89f1025140) INFO   Thrusting: Angle = -2.584366074589428, Thrust Vector = (-0.042436252679868086, -0.02644171814558179)
+[00:00:13.442] (7f89f1025140) INFO   Ship thrusting.
+[00:00:13.598] (7f89f1025140) INFO   Thrusting: Angle = -2.579699438322888, Thrust Vector = (-0.04231239717010662, -0.02663946406591457)
+[00:00:13.598] (7f89f1025140) INFO   Ship thrusting.
+[00:00:13.738] (7f89f1025140) INFO   Thrusting: Angle = -2.577286695098802, Thrust Vector = (-0.042247999888897575, -0.02674147537791643)
+[00:00:13.738] (7f89f1025140) INFO   Ship thrusting.
+[00:00:13.898] (7f89f1025140) INFO   Thrusting: Angle = -2.5750546574390882, Thrust Vector = (-0.04218820671878113, -0.026835707813534393)
+[00:00:13.899] (7f89f1025140) INFO   Ship thrusting.
+[00:00:14.498] (7f89f1025140) INFO   Thrusting: Angle = -2.5719990051449173, Thrust Vector = (-0.042106009298521034, -0.026964494821020858)
+[00:00:14.499] (7f89f1025140) INFO   Ship thrusting.
+[00:00:14.538] (7f89f1025140) INFO   Thrusting: Angle = -2.5718787373099152, Thrust Vector = (-0.04210276603259673, -0.026969558624575587)
+[00:00:14.538] (7f89f1025140) INFO   Ship thrusting.
+[00:00:14.795] (7f89f1025140) INFO   Thrusting: Angle = -2.5713715641214083, Thrust Vector = (-0.04208908238120851, -0.02699090854913639)
+[00:00:14.795] (7f89f1025140) INFO   Ship thrusting.
+[00:00:14.935] (7f89f1025140) INFO   Thrusting: Angle = -2.571215674805923, Thrust Vector = (-0.04208487427555403, -0.026997469459392128)
+[00:00:14.935] (7f89f1025140) INFO   Ship thrusting.
+[00:00:15.176] (7f89f1025140) INFO   Ship rotating left.
+[00:00:15.468] (7f89f1025140) INFO   Bullet fired.
+[00:00:15.877] (7f89f1025140) INFO   Ship rotating left.
+[00:00:15.913] (7f89f1025140) INFO   Bullet fired.
+[00:00:16.456] (7f89f1025140) INFO   Bullet fired.
+[00:00:16.497] (7f89f1025140) INFO   Thrusting: Angle = -4.294938778531516, Thrust Vector = (-0.020271546878693727, 0.04570628389122138)
+[00:00:16.497] (7f89f1025140) INFO   Ship thrusting.
+[00:00:16.652] (7f89f1025140) INFO   Thrusting: Angle = -4.389806189379293, Thrust Vector = (-0.01585085926919852, 0.04742098966099362)
+[00:00:16.652] (7f89f1025140) INFO   Ship thrusting.
+[00:00:16.807] (7f89f1025140) INFO   Thrusting: Angle = -4.45204869763652, Thrust Vector = (-0.012870469141969612, 0.04831512210546102)
+[00:00:16.808] (7f89f1025140) INFO   Ship thrusting.
+[00:00:16.953] (7f89f1025140) INFO   Thrusting: Angle = -4.48422930513844, Thrust Vector = (-0.011309263806076414, 0.04870421493222707)
+[00:00:16.953] (7f89f1025140) INFO   Ship thrusting.
+[00:00:16.976] (7f89f1025140) INFO   Bullet fired.
+[00:00:17.104] (7f89f1025140) INFO   Thrusting: Angle = -4.513999703886095, Thrust Vector = (-0.009854522874549599, 0.04901926538530518)
+[00:00:17.104] (7f89f1025140) INFO   Ship thrusting.
+[00:00:17.318] (7f89f1025140) INFO   Thrusting: Angle = -4.537258488933479, Thrust Vector = (-0.008711831725299024, 0.04923519054487424)
+[00:00:17.318] (7f89f1025140) INFO   Ship thrusting.
+[00:00:17.539] (7f89f1025140) INFO   Ship rotating right.
+[00:00:17.831] (7f89f1025140) INFO   Ship rotating right.
+[00:00:18.116] (7f89f1025140) INFO   Thrusting: Angle = -3.379633013733437, Thrust Vector = (-0.04859009605174021, 0.011789934931231004)
+[00:00:18.116] (7f89f1025140) INFO   Ship thrusting.
+[00:00:18.263] (7f89f1025140) INFO   Bullet fired.
+[00:00:18.312] (7f89f1025140) INFO   Thrusting: Angle = -3.101474077095273, Thrust Vector = (-0.0499597678920677, -0.0020053907775598)
+[00:00:18.312] (7f89f1025140) INFO   Ship thrusting.
+[00:00:18.799] (7f89f1025140) INFO   Bullet fired.
+[00:00:19.106] (7f89f1025140) INFO   Bullet hit asteroid. Score: 20
+[00:00:19.301] (7f89f1025140) INFO   Bullet fired.
+[00:00:19.818] (7f89f1025140) INFO   Ship rotating left.
+[00:00:20.002] (7f89f1025140) INFO   Bullet fired.
+[00:00:20.492] (7f89f1025140) INFO   Bullet fired.

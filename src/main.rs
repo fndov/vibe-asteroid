@@ -233,29 +233,12 @@ impl Vector2D {
         Vector2D { x, y }
     }
 
-    fn magnitude(&self) -> f64 {
-        (self.x.powi(2) + self.y.powi(2)).sqrt()
-    }
-
-    fn normalize(&self) -> Self {
-        let mag = self.magnitude();
-        if mag > 0.0 {
-            Vector2D::new(self.x / mag, self.y / mag)
-        } else {
-            Vector2D::new(0.0, 0.0)
-        }
-    }
-
     fn scale(&self, scalar: f64) -> Self {
         Vector2D::new(self.x * scalar, self.y * scalar)
     }
 
     fn add(&self, other: Vector2D) -> Self {
         Vector2D::new(self.x + other.x, self.y + other.y)
-    }
-
-    fn subtract(&self, other: Vector2D) -> Self {
-        Vector2D::new(self.x - other.x, self.y - other.y)
     }
 }
 
@@ -523,18 +506,6 @@ impl Minimap {
         }
     }
 
-    fn draw_circle(&mut self, center_x: u16, center_y: u16, radius: u16, character: char) {
-        for y in 0..self.height {
-            for x in 0..self.width {
-                let dx = x as i32 - center_x as i32;
-                let dy = y as i32 - center_y as i32;
-                if (dx * dx + dy * dy) <= (radius * radius) as i32 {
-                    self.set_char(x, y, character);
-                }
-            }
-        }
-    }
-
     fn render(&self, stdout: &mut OutputTarget) -> io::Result<()> {
         for y in 0..self.height {
             stdout.execute_move_to(MoveTo(self.x_offset, self.y_offset + y))?;
@@ -582,8 +553,8 @@ fn main() -> io::Result<()> {
     let args: Vec<String> = env::args().collect();
     let debug_mode_active = args.len() > 1 && args[1] == "--debug";
 
-    let mut terminal_width;
-    let mut terminal_height;
+    let terminal_width: u16;
+    let terminal_height: u16;
 
     if debug_mode_active {
         info!("Debug mode enabled.");
@@ -726,9 +697,7 @@ fn main() -> io::Result<()> {
             }
         }
 
-        let (mut current_terminal_width, mut current_terminal_height) = (terminal_width, terminal_height);
-
-        let (mut current_terminal_width, mut current_terminal_height) = (terminal_width, terminal_height);
+        let (mut terminal_width, mut terminal_height) = (terminal_width, terminal_height);
 
         if let Some(event) = current_event {
             match event {
@@ -763,25 +732,18 @@ fn main() -> io::Result<()> {
                     }
                 },
                 Event::Resize(new_width, new_height) => {
-                    current_terminal_width = new_width;
-                    current_terminal_height = new_height;
-                    minimap = Minimap::new(20, 20, current_terminal_width); // Re-initialize minimap with new screen width
-                    info!("Terminal resized to {}x{}", current_terminal_width, current_terminal_height);
+                    terminal_width = new_width;
+                    terminal_height = new_height;
+                    minimap.x_offset = terminal_width - minimap.width;
+                    info!("Terminal resized to {}x{}", terminal_width, terminal_height);
                 },
                 _ => {},
             }
         }
 
-        // Update terminal_width and terminal_height for the current frame
-        terminal_width = current_terminal_width;
-        terminal_height = current_terminal_height;
-        game_grid = GameGrid::new(terminal_width, terminal_height); // Re-initialize GameGrid with new dimensions
-        minimap = Minimap::new(20, 20, terminal_width); // Re-initialize minimap with new screen width
-
-        // Update terminal_width and terminal_height for the current frame
-        terminal_width = current_terminal_width;
-        terminal_height = current_terminal_height;
-        game_grid = GameGrid::new(terminal_width, terminal_height); // Re-initialize GameGrid with new dimensions
+        // Re-initialize GameGrid and Minimap with updated dimensions
+        game_grid = GameGrid::new(terminal_width, terminal_height);
+        minimap = Minimap::new(20, 20, terminal_width);
 
         // Update ship position
         ship.update(terminal_width, terminal_height);

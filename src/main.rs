@@ -33,6 +33,11 @@ const SCORE_LARGE_ASTEROID: u32 = 20;
 const SCORE_MEDIUM_ASTEROID: u32 = 50;
 const SCORE_SMALL_ASTEROID: u32 = 100;
 
+const BULLET_COOLDOWN: u64 = 10; // Frames between shots
+const MAX_HEALTH: u32 = 5;
+
+const UPGRADE_BOX_SPAWN_RATE: u64 = 60 * 10; // Every 10 seconds
+
 
 
 // --- ScreenBuffer for simulated rendering ---
@@ -262,6 +267,8 @@ struct Ship {
     angular_velocity: f64,
     angular_friction: f64,
     shape: Vec<(f64, f64)>, // Relative coordinates for diamond shape
+    fire_rate_multiplier: f64,
+    bullet_speed_multiplier: f64,
 }
 
 impl Ship {
@@ -279,6 +286,8 @@ impl Ship {
                 (0.0, -1.0), // Top point
                 (-1.0, 0.0), (1.0, 0.0), // Base points
             ],
+            fire_rate_multiplier: 1.0,
+            bullet_speed_multiplier: 1.0,
         }
     }
 
@@ -409,7 +418,7 @@ impl Asteroid {
                 ],
                 'O',
             ),
-            AsteroidSize::Small => (vec![(0.0, 0.0)], 'o'),
+            AsteroidSize::Small => (vec![(0.0, 0.0), (1.0, 0.0), (0.0, 1.0), (1.0, 1.0)], 'o'),
         };
         let angle = rng.gen_range(0.0..2.0 * std::f64::consts::PI);
         let speed = match size {
@@ -542,6 +551,69 @@ impl Particle {
     }
 }
 
+enum UpgradeType {
+    FireRate,
+    BulletSpeed,
+    Health,
+}
+
+struct Upgrade {
+    position: Vector2D,
+    upgrade_type: UpgradeType,
+    display_char: char,
+}
+
+impl Upgrade {
+    fn new(position: Vector2D, upgrade_type: UpgradeType) -> Self {
+        let display_char = match upgrade_type {
+            UpgradeType::FireRate => 'F',
+            UpgradeType::BulletSpeed => 'B',
+            UpgradeType::Health => 'H',
+        };
+        Upgrade { position, upgrade_type, display_char }
+    }
+
+    fn draw(&self, game_grid: &mut GameGrid) {
+        game_grid.set_char(self.position.x.round() as u16, self.position.y.round() as u16, self.display_char);
+    }
+}
+
+struct UpgradeBox {
+    position: Vector2D,
+    hits_remaining: u32,
+    shape: Vec<(f64, f64)>,
+    display_char: char,
+}
+
+impl UpgradeBox {
+    fn new(x: f64, y: f64) -> Self {
+        UpgradeBox {
+            position: Vector2D::new(x, y),
+            hits_remaining: 3, // Example health
+            shape: vec![
+                (-1.0, -1.0), (0.0, -1.0), (1.0, -1.0),
+                (-1.0, 0.0), (0.0, 0.0), (1.0, 0.0),
+                (-1.0, 1.0), (0.0, 1.0), (1.0, 1.0),
+            ],
+            display_char: 'U',
+        }
+    }
+
+    fn get_absolute_coords(&self) -> Vec<(u16, u16)> {
+        self.shape.iter().map(|&(dx, dy)| {
+            ((self.position.x + dx).round() as u16, (self.position.y + dy).round() as u16)
+        }).collect()
+    }
+
+    fn draw(&self, game_grid: &mut GameGrid) {
+        for &(dx, dy) in &self.shape {
+            let draw_x = (self.position.x + dx).round() as u16;
+            let draw_y = (self.position.y + dy).round() as u16;
+            game_grid.set_char(draw_x, draw_y, self.display_char);
+        }
+    }
+}
+
 // --- Main function (modified for debug mode and simulated rendering/input) ---
 fn main() -> io::Result<()> {
     simple_logging::log_to_file("vibe-asteroid.log", log::LevelFilter::Info).unwrap();
@@ -651,6 +723,10 @@ fn main() -> io::Result<()> {
     let mut asteroids: Vec<Asteroid> = Vec::new();
     let mut bullets: Vec<Bullet> = Vec::new();
     let mut particles: Vec<Particle> = Vec::new();
+    let mut upgrade_boxes: Vec<UpgradeBox> = Vec::new();
+    let mut upgrades: Vec<Upgrade> = Vec::new();
+    let mut player_health = MAX_HEALTH;
+    let mut last_shot_frame = 0;
     let mut rng = rand::thread_rng();
 
     let _max_frames: Option<u64> = if !debug_mode_active && args.len() > 1 {
@@ -723,10 +799,13 @@ fn main() -> io::Result<()> {
                             info!("Ship rotating right.");
                         },
                         KeyCode::Char(' ') => {
-                            let bullet_speed = BULLET_SPEED;
-                            let bullet_velocity = Vector2D::new(ship.angle.cos() * bullet_speed, ship.angle.sin() * bullet_speed);
-                            bullets.push(Bullet::new(ship.position, bullet_velocity));
-                            info!("Bullet fired.");
+                            if frame_count - last_shot_frame >= BULLET_COOLDOWN {
+                                let bullet_speed = BULLET_SPEED * ship.bullet_speed_multiplier;
+                                let bullet_velocity = Vector2D::new(ship.angle.cos() * bullet_speed, ship.angle.sin() * bullet_speed);
+                                bullets.push(Bullet::new(ship.position, bullet_velocity));
+                                last_shot_frame = frame_count;
+                                info!("Bullet fired.");
+                            }
                         },
                         _ => {},
                     }
@@ -761,6 +840,14 @@ fn main() -> io::Result<()> {
             info!("New asteroid spawned at x: {}, y: {}", x, y);
         }
 
+        // Generate new upgrade boxes
+        if frame_count % UPGRADE_BOX_SPAWN_RATE == 0 {
+            let x = rng.gen_range(0.0..terminal_width as f64);
+            let y = rng.gen_range(0.0..terminal_height as f64);
+            upgrade_boxes.push(UpgradeBox::new(x, y));
+            info!("New upgrade box spawned at x: {}, y: {}", x, y);
+        }
+
         // Increase difficulty
         difficulty_increase_timer += 1;
         if difficulty_increase_timer >= DIFFICULTY_INCREASE_INTERVAL_FRAMES { // Every 60 seconds (assuming 60 FPS)
@@ -789,8 +876,12 @@ fn main() -> io::Result<()> {
             }
 
             if collision {
-                info!("Collision detected between ship and asteroid. Game over.");
-                running = false;
+                player_health = player_health.saturating_sub(1);
+                info!("Ship hit by asteroid. Health: {}", player_health);
+                if player_health == 0 {
+                    info!("Ship health reached 0. Game over.");
+                    running = false;
+                }
             }
             true // Keep all asteroids for now, will handle removal on bullet collision later
         });
@@ -850,13 +941,88 @@ fn main() -> io::Result<()> {
                 }
             });
             asteroids.extend(new_asteroids_to_add);
-            bullet.lifetime > 0 && !hit_asteroid // Keep bullet if still alive and hasn't hit an asteroid
+
+            // Bullet-UpgradeBox collision
+            let mut hit_upgrade_box = false;
+            upgrade_boxes.retain_mut(|upgrade_box| {
+                let upgrade_box_coords = upgrade_box.get_absolute_coords();
+                if upgrade_box_coords.contains(&bullet_pos) {
+                    hit_upgrade_box = true;
+                    upgrade_box.hits_remaining -= 1;
+                    info!("Bullet hit upgrade box. Hits remaining: {}", upgrade_box.hits_remaining);
+
+                    // Explosion particles for upgrade box hit
+                    for _ in 0..3 {
+                        let angle = rng.gen_range(0.0..2.0 * std::f64::consts::PI);
+                        let speed = rng.gen_range(0.2..0.8);
+                        let explosion_velocity = Vector2D::new(angle.cos() * speed, angle.sin() * speed);
+                        particles.push(Particle::new(upgrade_box.position, explosion_velocity, 10, '+'));
+                    }
+
+                    if upgrade_box.hits_remaining == 0 {
+                        // Spawn upgrades
+                        let num_upgrades = rng.gen_range(1..=3);
+                        for _ in 0..num_upgrades {
+                            let upgrade_type = match rng.gen_range(0..3) {
+                                0 => UpgradeType::FireRate,
+                                1 => UpgradeType::BulletSpeed,
+                                _ => UpgradeType::Health,
+                            };
+                            upgrades.push(Upgrade::new(upgrade_box.position, upgrade_type));
+                        }
+                        info!("Upgrade box destroyed. Spawned {} upgrades.", num_upgrades);
+                        false // Remove upgrade box
+                    } else {
+                        true // Keep upgrade box
+                    }
+                } else {
+                    true // Keep upgrade box
+                }
+            });
+
+            bullet.lifetime > 0 && !hit_asteroid && !hit_upgrade_box // Keep bullet if still alive and hasn't hit anything
         });
 
         // Update particles
         particles.retain_mut(|particle| {
             particle.update();
             particle.lifetime > 0
+        });
+
+        // Update and draw upgrades (collectible items)
+        upgrades.retain_mut(|upgrade| {
+            // Check for ship collision with upgrade
+            let ship_coords = ship.get_absolute_coords();
+            let upgrade_pos = (upgrade.position.x.round() as u16, upgrade.position.y.round() as u16);
+
+            let mut collected = false;
+            for ship_point in &ship_coords {
+                if ship_point.0 == upgrade_pos.0 && ship_point.1 == upgrade_pos.1 {
+                    collected = true;
+                    break;
+                }
+            }
+
+            if collected {
+                info!("Upgrade collected: {:?}", upgrade.upgrade_type);
+                match upgrade.upgrade_type {
+                    UpgradeType::FireRate => {
+                        ship.fire_rate_multiplier *= 1.1; // Increase fire rate by 10%
+                        info!("Fire rate increased to {}", ship.fire_rate_multiplier);
+                    },
+                    UpgradeType::BulletSpeed => {
+                        ship.bullet_speed_multiplier *= 1.1; // Increase bullet speed by 10%
+                        info!("Bullet speed increased to {}", ship.bullet_speed_multiplier);
+                    },
+                    UpgradeType::Health => {
+                        player_health = (player_health + 1).min(MAX_HEALTH); // Increase health, cap at MAX_HEALTH
+                        info!("Health increased to {}", player_health);
+                    },
+                }
+                false // Remove upgrade
+            } else {
+                true // Keep upgrade
+            }
         });
 
         // Draw game state onto GameGrid
@@ -869,6 +1035,12 @@ fn main() -> io::Result<()> {
         }
         for particle in &particles {
             particle.draw(&mut game_grid);
+        }
+        for upgrade_box in &upgrade_boxes {
+            upgrade_box.draw(&mut game_grid);
+        }
+        for upgrade in &upgrades {
+            upgrade.draw(&mut game_grid);
         }
 
         // Draw minimap
@@ -916,7 +1088,7 @@ fn main() -> io::Result<()> {
 
         // Draw score and controls (always to stdout_target, which handles ScreenBuffer in debug mode)
         stdout_target.execute_move_to(MoveTo(0, 0)).map_err(|e| { error!("Failed to move cursor for score: {}", e); e })?;
-        write!(stdout_target, "Score: {}", score).map_err(|e| { error!("Failed to write score: {}", e); e })?;
+        write!(stdout_target, "Score: {}  Health: {}/{}", score, player_health, MAX_HEALTH).map_err(|e| { error!("Failed to write score: {}", e); e })?;
         stdout_target.flush().map_err(|e| { error!("Failed to flush stdout after score: {}", e); e })?;
 
         let controls_text = [

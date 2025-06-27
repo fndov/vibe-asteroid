@@ -12,27 +12,6 @@ use log::{info, error};
 use simple_logging;
 use std::env;
 
-// --- Game Constants ---
-const INITIAL_ASTEROID_SPAWN_RATE: u64 = 100; // Frames per asteroid spawn
-const INITIAL_MAX_ASTEROIDS: usize = 4;
-const DIFFICULTY_INCREASE_INTERVAL_FRAMES: u64 = 60 * 60; // Every 60 seconds (assuming 60 FPS)
-const ASTEROID_SPAWN_RATE_DECREASE_FACTOR: f64 = 0.9; // Decrease spawn rate by 10%
-const MIN_ASTEROID_SPAWN_RATE: u64 = 10;
-const INITIAL_GAME_SPEED_MULTIPLIER: f64 = 0.1;
-const GAME_SPEED_MULTIPLIER_INCREASE: f64 = 0.05;
-
-const SHIP_ROTATION_SPEED: f64 = 0.1;
-const SHIP_THRUST_POWER: f64 = 0.05;
-const SHIP_FRICTION: f64 = 0.98;
-const SHIP_ANGULAR_FRICTION: f64 = 0.9;
-
-const BULLET_SPEED: f64 = 2.0;
-const BULLET_LIFETIME: u32 = 30; // Frames
-
-const SCORE_LARGE_ASTEROID: u32 = 20;
-const SCORE_MEDIUM_ASTEROID: u32 = 50;
-const SCORE_SMALL_ASTEROID: u32 = 100;
-
 
 
 // --- ScreenBuffer for simulated rendering ---
@@ -276,26 +255,25 @@ struct Ship {
     rotation_speed: f64,
     thrust_power: f64,
     friction: f64,
-    angular_velocity: f64,
-    angular_friction: f64,
     shape: Vec<(f64, f64)>, // Relative coordinates for diamond shape
+    display_char: char,
 }
 
 impl Ship {
     fn new(x: f64, y: f64) -> Self {
+        let shape = vec![
+            (0.0, 0.0), // Center
+            (-1.0, 0.0), (1.0, 0.0), (0.0, -1.0), (0.0, 1.0), // Diamond points
+        ];
         Ship {
             position: Vector2D::new(x, y),
             velocity: Vector2D::new(0.0, 0.0),
-            angle: -std::f64::consts::FRAC_PI_2, // Facing upwards initially
-            rotation_speed: SHIP_ROTATION_SPEED, 
-            thrust_power: SHIP_THRUST_POWER, 
-            friction: SHIP_FRICTION,
-            angular_velocity: 0.0,
-            angular_friction: SHIP_ANGULAR_FRICTION,
-            shape: vec![
-                (0.0, -1.0), // Top point
-                (-1.0, 0.0), (1.0, 0.0), // Base points
-            ],
+            angle: 0.0, // Facing right initially
+            rotation_speed: 0.1,
+            thrust_power: 0.2,
+            friction: 0.98, // Reduces velocity by 2% each frame
+            shape,
+            display_char: '#',
         }
     }
 
@@ -311,25 +289,18 @@ impl Ship {
     }
 
     fn draw(&self, game_grid: &mut GameGrid) {
-        let draw_angle = self.angle + std::f64::consts::FRAC_PI_2;
         for &(dx, dy) in &self.shape {
-            let rotated_x = dx * draw_angle.cos() - dy * draw_angle.sin();
-            let rotated_y = dx * draw_angle.sin() + dy * draw_angle.cos();
+            let rotated_x = dx * self.angle.cos() - dy * self.angle.sin();
+            let rotated_y = dx * self.angle.sin() + dy * self.angle.cos();
 
             let draw_x = (self.position.x + rotated_x).round() as u16;
             let draw_y = (self.position.y + rotated_y).round() as u16;
-
-            let char_to_draw = Ship::get_rotated_char(dx, dy, self.angle);
-            game_grid.set_char(draw_x, draw_y, char_to_draw);
+            game_grid.set_char(draw_x, draw_y, self.display_char);
         }
     }
 
     fn update(&mut self, terminal_width: u16, terminal_height: u16) {
         self.position = self.position.add(self.velocity);
-        self.velocity = self.velocity.scale(self.friction);
-
-        self.angle += self.angular_velocity;
-        self.angular_velocity *= self.angular_friction;
 
         // Screen wrapping
         self.position.x = wrap_coordinate(self.position.x, terminal_width as f64);
@@ -339,59 +310,10 @@ impl Ship {
     fn thrust(&mut self) {
         let thrust_vector = Vector2D::new(self.angle.cos(), self.angle.sin()).scale(self.thrust_power);
         self.velocity = self.velocity.add(thrust_vector);
-        info!("Thrusting: Angle = {}, Thrust Vector = ({}, {})", self.angle, thrust_vector.x, thrust_vector.y);
     }
 
     fn rotate(&mut self, direction: f64) {
-        self.angular_velocity += self.rotation_speed * direction;
-    }
-
-    fn get_rotated_char(original_dx: f64, original_dy: f64, angle: f64) -> char {
-        // Normalize angle to be between 0 and 2*PI
-        let normalized_angle = angle.rem_euclid(2.0 * std::f64::consts::PI);
-
-        // Determine the primary direction based on 8 octants
-        // 0 = East (right)
-        // PI/2 = South (down)
-        // PI = West (left)
-        // 3*PI/2 = North (up)
-
-        match (original_dx.round() as i8, original_dy.round() as i8) {
-            (0, -1) => { // Top point
-                if normalized_angle >= 7.0 * std::f64::consts::FRAC_PI_4 || normalized_angle < std::f64::consts::FRAC_PI_4 {
-                    '>' // Pointing right
-                } else if normalized_angle >= std::f64::consts::FRAC_PI_4 && normalized_angle < 3.0 * std::f64::consts::FRAC_PI_4 {
-                    'v' // Pointing down
-                } else if normalized_angle >= 3.0 * std::f64::consts::FRAC_PI_4 && normalized_angle < 5.0 * std::f64::consts::FRAC_PI_4 {
-                    '<' // Pointing left
-                } else { // 5*PI/4 to 7*PI/4
-                    '^' // Pointing up
-                }
-            },
-            (-1, 0) => { // Left base point
-                if normalized_angle >= 7.0 * std::f64::consts::FRAC_PI_4 || normalized_angle < std::f64::consts::FRAC_PI_4 {
-                    '\u{005C}' // Right-pointing ship, this is bottom-left
-                } else if normalized_angle >= std::f64::consts::FRAC_PI_4 && normalized_angle < 3.0 * std::f64::consts::FRAC_PI_4 {
-                    '/' // Down-pointing ship, this is top-left
-                } else if normalized_angle >= 3.0 * std::f64::consts::FRAC_PI_4 && normalized_angle < 5.0 * std::f64::consts::FRAC_PI_4 {
-                    '\u{005C}' // Left-pointing ship, this is top-right
-                } else { // 5*PI/4 to 7*PI/4
-                    '/' // Up-pointing ship, this is bottom-left
-                }
-            },
-            (1, 0) => { // Right base point
-                if normalized_angle >= 7.0 * std::f64::consts::FRAC_PI_4 || normalized_angle < std::f64::consts::FRAC_PI_4 {
-                    '/' // Right-pointing ship, this is bottom-right
-                } else if normalized_angle >= std::f64::consts::FRAC_PI_4 && normalized_angle < 3.0 * std::f64::consts::FRAC_PI_4 {
-                    '\u{005C}' // Down-pointing ship, this is top-right
-                } else if normalized_angle >= 3.0 * std::f64::consts::FRAC_PI_4 && normalized_angle < 5.0 * std::f64::consts::FRAC_PI_4 {
-                    '/' // Left-pointing ship, this is top-right
-                } else { // 5*PI/4 to 7*PI/4
-                    '\u{005C}' // Up-pointing ship, this is bottom-right
-                }
-            },
-            _ => ' ', // Should not happen for a triangle
-        }
+        self.angle += self.rotation_speed * direction;
     }
 }
 
@@ -410,7 +332,7 @@ struct Asteroid {
 }
 
 impl Asteroid {
-    fn new(x: f64, y: f64, rng: &mut impl Rng, size: AsteroidSize, game_speed_multiplier: f64) -> Self {
+    fn new(x: f64, y: f64, rng: &mut impl Rng, size: AsteroidSize) -> Self {
         let (shape, display_char) = match size {
             AsteroidSize::Large => (
                 vec![
@@ -433,7 +355,7 @@ impl Asteroid {
             AsteroidSize::Large => rng.gen_range(0.3..0.8),
             AsteroidSize::Medium => rng.gen_range(0.8..1.5),
             AsteroidSize::Small => rng.gen_range(1.5..2.5),
-        } * game_speed_multiplier;
+        };
         let velocity = Vector2D::new(angle.cos() * speed, angle.sin() * speed);
 
         Asteroid { position: Vector2D::new(x, y), velocity, size, shape, display_char }
@@ -475,7 +397,7 @@ impl Bullet {
         Bullet {
             position,
             velocity,
-            lifetime: BULLET_LIFETIME, // Bullet lasts for 30 frames
+            lifetime: 30, // Bullet lasts for 30 frames
             display_char: '*'
         }
     }
@@ -620,10 +542,7 @@ fn main() -> io::Result<()> {
     let mut running = true;
     let mut frame_count = 0;
     let mut score = 0;
-    let mut asteroid_spawn_rate = INITIAL_ASTEROID_SPAWN_RATE;
-    let mut max_asteroids = INITIAL_MAX_ASTEROIDS;
-    let mut difficulty_increase_timer = 0; // Timer to increase difficulty
-    let mut game_speed_multiplier = INITIAL_GAME_SPEED_MULTIPLIER;
+    let mut asteroid_spawn_rate = 10; // Start with 10 frames per asteroid
 
     let mut game_grid = GameGrid::new(terminal_width, terminal_height);
 
@@ -665,7 +584,7 @@ fn main() -> io::Result<()> {
                         info!("Ship rotating right.");
                     },
                     KeyCode::Char(' ') => {
-                        let bullet_speed = BULLET_SPEED;
+                        let bullet_speed = 2.0;
                         let bullet_velocity = Vector2D::new(ship.angle.cos() * bullet_speed, ship.angle.sin() * bullet_speed);
                         bullets.push(Bullet::new(ship.position, bullet_velocity));
                         info!("Bullet fired.");
@@ -679,7 +598,7 @@ fn main() -> io::Result<()> {
         ship.update(terminal_width, terminal_height);
 
         // Generate new asteroids (from edges)
-        if asteroids.len() < max_asteroids && frame_count % asteroid_spawn_rate == 0 {
+        if frame_count % asteroid_spawn_rate == 0 {
             let side = rng.gen_range(0..4); // 0: top, 1: right, 2: bottom, 3: left
             let (x, y) = match side {
                 0 => (rng.gen_range(0.0..terminal_width as f64), 0.0), // Top
@@ -687,19 +606,14 @@ fn main() -> io::Result<()> {
                 2 => (rng.gen_range(0.0..terminal_width as f64), terminal_height as f64 - 1.0), // Bottom
                 _ => (0.0, rng.gen_range(0.0..terminal_height as f64)), // Left
             };
-            asteroids.push(Asteroid::new(x, y, &mut rng, AsteroidSize::Large, game_speed_multiplier));
+            asteroids.push(Asteroid::new(x, y, &mut rng, AsteroidSize::Large));
             info!("New asteroid spawned at x: {}, y: {}", x, y);
         }
 
         // Increase difficulty
-        difficulty_increase_timer += 1;
-        if difficulty_increase_timer >= DIFFICULTY_INCREASE_INTERVAL_FRAMES { // Every 60 seconds (assuming 60 FPS)
-            max_asteroids += 1;
-            asteroid_spawn_rate = (asteroid_spawn_rate as f64 * ASTEROID_SPAWN_RATE_DECREASE_FACTOR).round() as u64; // Decrease spawn rate by 10%
-            if asteroid_spawn_rate < MIN_ASTEROID_SPAWN_RATE { asteroid_spawn_rate = MIN_ASTEROID_SPAWN_RATE; } // Cap minimum spawn rate
-            game_speed_multiplier += GAME_SPEED_MULTIPLIER_INCREASE; // Increase asteroid speed gradually
-            info!("Difficulty increased. Max asteroids: {}, New asteroid spawn rate: {}, Game speed multiplier: {}", max_asteroids, asteroid_spawn_rate, game_speed_multiplier);
-            difficulty_increase_timer = 0;
+        if frame_count % 500 == 0 && asteroid_spawn_rate > 1 {
+            asteroid_spawn_rate -= 1;
+            info!("Difficulty increased. New asteroid spawn rate: {}", asteroid_spawn_rate);
         }
 
         // Update asteroids and check for collisions with ship
@@ -740,21 +654,21 @@ fn main() -> io::Result<()> {
                     hit_asteroid = true;
                     match asteroid.size {
                         AsteroidSize::Large => {
-                            score += SCORE_LARGE_ASTEROID;
+                            score += 20;
                             let new_x = asteroid.position.x;
                             let new_y = asteroid.position.y;
-                            new_asteroids_to_add.push(Asteroid::new(new_x, new_y, &mut rng, AsteroidSize::Medium, game_speed_multiplier));
-                            new_asteroids_to_add.push(Asteroid::new(new_x, new_y, &mut rng, AsteroidSize::Medium, game_speed_multiplier));
+                            new_asteroids_to_add.push(Asteroid::new(new_x, new_y, &mut rng, AsteroidSize::Medium));
+                            new_asteroids_to_add.push(Asteroid::new(new_x, new_y, &mut rng, AsteroidSize::Medium));
                         },
                         AsteroidSize::Medium => {
-                            score += SCORE_MEDIUM_ASTEROID;
+                            score += 50;
                             let new_x = asteroid.position.x;
                             let new_y = asteroid.position.y;
-                            new_asteroids_to_add.push(Asteroid::new(new_x, new_y, &mut rng, AsteroidSize::Small, game_speed_multiplier));
-                            new_asteroids_to_add.push(Asteroid::new(new_x, new_y, &mut rng, AsteroidSize::Small, game_speed_multiplier));
+                            new_asteroids_to_add.push(Asteroid::new(new_x, new_y, &mut rng, AsteroidSize::Small));
+                            new_asteroids_to_add.push(Asteroid::new(new_x, new_y, &mut rng, AsteroidSize::Small));
                         },
                         AsteroidSize::Small => {
-                            score += SCORE_SMALL_ASTEROID;
+                            score += 100;
                         },
                     }
                     info!("Bullet hit asteroid. Score: {}", score);

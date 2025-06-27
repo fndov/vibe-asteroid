@@ -1,0 +1,85 @@
+[00:00:00.000] (7efd4ffdcc40) INFO   Starting Vibe-stroid application.
+[00:00:00.000] (7efd4ffdcc40) INFO   Attempting to enable raw mode.
+[00:00:00.000] (7efd4ffdcc40) INFO   Raw mode enabled.
+[00:00:00.000] (7efd4ffdcc40) INFO   Terminal size: 146x31
+[00:00:00.000] (7efd4ffdcc40) INFO   Attempting to clear screen and hide cursor.
+[00:00:00.000] (7efd4ffdcc40) INFO   Screen cleared and cursor hidden.
+[00:00:00.000] (7efd4ffdcc40) INFO   Title screen displayed. Waiting for key press.
+[00:00:00.430] (7efd4ffdcc40) INFO   Key pressed. Starting game loop.
+[00:00:00.531] (7efd4ffdcc40) INFO   Title screen cleared.
+[00:00:00.531] (7efd4ffdcc40) INFO   Ship moved to x: 145
+[00:00:00.531] (7efd4ffdcc40) INFO   New asteroid spawned at x: 6
+[00:00:00.531] (7efd4ffdcc40) INFO   Difficulty increased. New asteroid spawn rate: 9
+[00:00:00.967] (7efd4ffdcc40) INFO   Ship moved to x: 145
+[00:00:00.967] (7efd4ffdcc40) INFO   New asteroid spawned at x: 118
+[00:00:01.348] (7efd4ffdcc40) INFO   Ship moved to x: 145
+[00:00:01.399] (7efd4ffdcc40) INFO   New asteroid spawned at x: 100
+[00:00:01.590] (7efd4ffdcc40) INFO   Ship moved to x: 145
+[00:00:01.831] (7efd4ffdcc40) INFO   Ship moved to x: 145
+[00:00:01.832] (7efd4ffdcc40) INFO   New asteroid spawned at x: 62
+[00:00:01.983] (7efd4ffdcc40) INFO   Asteroid went off screen. Score: 1
+[00:00:02.062] (7efd4ffdcc40) INFO   Ship moved to x: 145
+[00:00:02.217] (7efd4ffdcc40) INFO   New asteroid spawned at x: 2
+[00:00:02.275] (7efd4ffdcc40) INFO   Ship moved to x: 145
+[00:00:02.326] (7efd4ffdcc40) INFO   Asteroid went off screen. Score: 2
+[00:00:02.502] (7efd4ffdcc40) INFO   Ship moved to x: 145
+[00:00:02.573] (7efd4ffdcc40) INFO   New asteroid spawned at x: 90
+[00:00:02.703] (7efd4ffdcc40) INFO   Ship moved to x: 145
+[00:00:02.703] (7efd4ffdcc40) INFO   Asteroid went off screen. Score: 3
+[00:00:02.869] (7efd4ffdcc40) INFO   Ship moved to x: 145
+[00:00:02.964] (7efd4ffdcc40) INFO   New asteroid spawned at x: 91
+[00:00:03.116] (7efd4ffdcc40) INFO   Asteroid went off screen. Score: 4
+[00:00:03.180] (7efd4ffdcc40) INFO   Ship moved to x: 145
+[00:00:03.331] (7efd4ffdcc40) INFO   New asteroid spawned at x: 140
+[00:00:03.483] (7efd4ffdcc40) INFO   Asteroid went off screen. Score: 5
+[00:00:03.753] (7efd4ffdcc40) INFO   Ship moved to x: 145
+[00:00:03.753] (7efd4ffdcc40) INFO   New asteroid spawned at x: 71
+[00:00:03.894] (7efd4ffdcc40) INFO   Ship moved to x: 145
+[00:00:03.894] (7efd4ffdcc40) INFO   Asteroid went off screen. Score: 6
+[00:00:04.197] (7efd4ffdcc40) INFO   New asteroid spawned at x: 46
+[00:00:04.349] (7efd4ffdcc40) INFO   Asteroid went off screen. Score: 7
+[00:00:04.364] (7efd4ffdcc40) INFO   Ship moved to x: 145
+[00:00:04.591] (7efd4ffdcc40) INFO   New asteroid spawned at x: 117
+[00:00:04.620] (7efd4ffdcc40) INFO   Ship moved to x: 145
+[00:00:04.721] (7efd4ffdcc40) INFO   Asteroid went off screen. Score: 8
+[00:00:04.866] (7efd4ffdcc40) INFO   Ship moved to x: 145
+[00:00:05.002] (7efd4ffdcc40) INFO   Ship moved to x: 145
+[00:00:05.002] (7efd4ffdcc40) INFO   New asteroid spawned at x: 143
+[00:00:05.154] (7efd4ffdcc40) INFO   Asteroid went off screen. Score: 9
+[00:00:05.208] (7efd4ffdcc40) INFO   Ship moved to x: 145
+[00:00:05.398] (7efd4ffdcc40) INFO   New asteroid spawned at x: 25
+[00:00:05.550] (7efd4ffdcc40) INFO   Asteroid went off screen. Score: 10
+[00:00:05.853] (7efd4ffdcc40) INFO   New asteroid spawned at x: 26
+[00:00:06.005] (7efd4ffdcc40) INFO   Asteroid went off screen. Score: 11
+[00:00:06.122] (7efd4ffdcc40) INFO   Ship moved to x: 145
+[00:00:06.271] (7efd4ffdcc40) INFO   Ship moved to x: 145
+[00:00:06.271] (7efd4ffdcc40) INFO   New asteroid spawned at x: 139
+[00:00:06.411] (7efd4ffdcc40) INFO   Ship moved to x: 145
+[00:00:06.411] (7efd4ffdcc40) INFO   Asteroid went off screen. Score: 12
+[00:00:06.682] (7efd4ffdcc40) INFO   Ship moved to x: 145
+[00:00:06.682] (7efd4ffdcc40) INFO   New asteroid spawned at x: 55
+[00:00:06.834] (7efd4ffdcc40) INFO   Asteroid went off screen. Score: 13
+[00:00:07.093] (7efd4ffdcc40) INFO   Ship moved to x: 145
+[00:00:07.093] (7efd4ffdcc40) INFO   New asteroid spawned at x: 141
+[00:00:07.245] (7efd4ffdcc40) INFO   Asteroid went off screen. Score: 14
+[00:00:07.291] (7efd4ffdcc40) INFO   Ship moved to x: 145
+[00:00:07.419] (7efd4ffdcc40) INFO   Ship moved to x: 145
+[00:00:07.521] (7efd4ffdcc40) INFO   New asteroid spawned at x: 48
+[00:00:07.611] (7efd4ffdcc40) INFO   Ship moved to x: 145
+[00:00:07.662] (7efd4ffdcc40) INFO   Asteroid went off screen. Score: 15
+[00:00:07.771] (7efd4ffdcc40) INFO   Ship moved to x: 145
+[00:00:07.908] (7efd4ffdcc40) INFO   Ship moved to x: 145
+[00:00:07.908] (7efd4ffdcc40) INFO   New asteroid spawned at x: 16
+[00:00:08.059] (7efd4ffdcc40) INFO   Asteroid went off screen. Score: 16
+[00:00:08.132] (7efd4ffdcc40) INFO   Ship moved to x: 145
+[00:00:08.289] (7efd4ffdcc40) INFO   Ship moved to x: 145
+[00:00:08.289] (7efd4ffdcc40) INFO   New asteroid spawned at x: 86
+[00:00:08.439] (7efd4ffdcc40) INFO   Asteroid went off screen. Score: 17
+[00:00:08.459] (7efd4ffdcc40) INFO   Ship moved to x: 145
+[00:00:08.598] (7efd4ffdcc40) INFO   Ship moved to x: 145
+[00:00:08.649] (7efd4ffdcc40) INFO   New asteroid spawned at x: 74
+[00:00:08.773] (7efd4ffdcc40) INFO   Quit key 'q' pressed. Exiting game loop.
+[00:00:08.773] (7efd4ffdcc40) INFO   Asteroid went off screen. Score: 18
+[00:00:08.773] (7efd4ffdcc40) INFO   Game loop ended. Displaying game over screen.
+[00:00:08.774] (7efd4ffdcc40) INFO   Game over screen displayed. Waiting for final key press.
+[00:00:08.774] (7efd4ffdcc40) INFO   Final key pressed. Exiting application.

@@ -200,79 +200,219 @@ impl GameGrid {
 }
 
 // --- Ship and Asteroid structs (modified for geometric rendering) ---
+// --- Vector2D for physics calculations ---
+#[derive(Clone, Copy, Debug, PartialEq)]
+struct Vector2D {
+    x: f64,
+    y: f64,
+}
+
+impl Vector2D {
+    fn new(x: f64, y: f64) -> Self {
+        Vector2D { x, y }
+    }
+
+    fn magnitude(&self) -> f64 {
+        (self.x.powi(2) + self.y.powi(2)).sqrt()
+    }
+
+    fn normalize(&self) -> Self {
+        let mag = self.magnitude();
+        if mag > 0.0 {
+            Vector2D::new(self.x / mag, self.y / mag)
+        } else {
+            Vector2D::new(0.0, 0.0)
+        }
+    }
+
+    fn scale(&self, scalar: f64) -> Self {
+        Vector2D::new(self.x * scalar, self.y * scalar)
+    }
+
+    fn add(&self, other: Vector2D) -> Self {
+        Vector2D::new(self.x + other.x, self.y + other.y)
+    }
+
+    fn subtract(&self, other: Vector2D) -> Self {
+        Vector2D::new(self.x - other.x, self.y - other.y)
+    }
+}
+
+fn wrap_coordinate(value: f64, max: f64) -> f64 {
+    let wrapped = value % max;
+    if wrapped < 0.0 {
+        wrapped + max
+    } else {
+        wrapped
+    }
+}
+
+// --- Ship and Asteroid structs (modified for geometric rendering) ---
 struct Ship {
-    x: u16,
-    y: u16,
-    shape: Vec<(i16, i16)>, // Relative coordinates for diamond shape
+    position: Vector2D,
+    velocity: Vector2D,
+    angle: f64, // Radians
+    rotation_speed: f64,
+    thrust_power: f64,
+    friction: f64,
+    shape: Vec<(f64, f64)>, // Relative coordinates for diamond shape
     display_char: char,
 }
 
 impl Ship {
-    fn new(x: u16, y: u16) -> Self {
+    fn new(x: f64, y: f64) -> Self {
         let shape = vec![
-            (0, 0), // Center
-            (-1, 0), (1, 0), (0, -1), (0, 1), // Diamond points
+            (0.0, 0.0), // Center
+            (-1.0, 0.0), (1.0, 0.0), (0.0, -1.0), (0.0, 1.0), // Diamond points
         ];
-        Ship { x, y, shape, display_char: '#' }
+        Ship {
+            position: Vector2D::new(x, y),
+            velocity: Vector2D::new(0.0, 0.0),
+            angle: 0.0, // Facing right initially
+            rotation_speed: 0.1,
+            thrust_power: 0.2,
+            friction: 0.98, // Reduces velocity by 2% each frame
+            shape,
+            display_char: '#',
+        }
     }
 
     fn get_absolute_coords(&self) -> Vec<(u16, u16)> {
         self.shape.iter().map(|&(dx, dy)| {
-            ((self.x as i16 + dx) as u16, (self.y as i16 + dy) as u16)
+            // Rotate the relative coordinates
+            let rotated_x = dx * self.angle.cos() - dy * self.angle.sin();
+            let rotated_y = dx * self.angle.sin() + dy * self.angle.cos();
+
+            // Translate to absolute position and convert to u16
+            ((self.position.x + rotated_x).round() as u16, (self.position.y + rotated_y).round() as u16)
         }).collect()
     }
 
     fn draw(&self, game_grid: &mut GameGrid) {
         for &(dx, dy) in &self.shape {
-            let draw_x = (self.x as i16 + dx) as u16;
-            let draw_y = (self.y as i16 + dy) as u16;
+            let rotated_x = dx * self.angle.cos() - dy * self.angle.sin();
+            let rotated_y = dx * self.angle.sin() + dy * self.angle.cos();
+
+            let draw_x = (self.position.x + rotated_x).round() as u16;
+            let draw_y = (self.position.y + rotated_y).round() as u16;
             game_grid.set_char(draw_x, draw_y, self.display_char);
         }
     }
 
-    fn update(&mut self, direction: KeyCode, terminal_width: u16) {
-        self.x = self.x.saturating_add(match direction {
-            KeyCode::Left => -1,
-            KeyCode::Right => 1,
-            _ => 0,
-        } as u16);
-        self.x = self.x.min(terminal_width - 1).max(0);
+    fn update(&mut self, terminal_width: u16, terminal_height: u16) {
+        self.position = self.position.add(self.velocity);
+
+        // Screen wrapping
+        self.position.x = wrap_coordinate(self.position.x, terminal_width as f64);
+        self.position.y = wrap_coordinate(self.position.y, terminal_height as f64);
+    }
+
+    fn thrust(&mut self) {
+        let thrust_vector = Vector2D::new(self.angle.cos(), self.angle.sin()).scale(self.thrust_power);
+        self.velocity = self.velocity.add(thrust_vector);
+    }
+
+    fn rotate(&mut self, direction: f64) {
+        self.angle += self.rotation_speed * direction;
     }
 }
 
+enum AsteroidSize {
+    Large,
+    Medium,
+    Small,
+}
+
 struct Asteroid {
-    x: u16,
-    y: u16,
-    shape: Vec<(i16, i16)>, // Relative coordinates for bumpy shape
+    position: Vector2D,
+    velocity: Vector2D,
+    size: AsteroidSize,
+    shape: Vec<(f64, f64)>, // Relative coordinates for bumpy shape
     display_char: char,
 }
 
 impl Asteroid {
-    fn new(x: u16, y: u16, rng: &mut impl Rng) -> Self {
-        let shape = match rng.gen_range(0..3) {
-            0 => vec![(0, 0)], // Small asteroid (single point)
-            1 => vec![(0, 0), (-1, 0), (1, 0), (0, -1), (0, 1)], // Medium bumpy
-            _ => vec![(0, 0), (-1, -1), (0, -1), (1, -1), (-1, 0), (1, 0), (-1, 1), (0, 1), (1, 1)], // Large bumpy
+    fn new(x: f64, y: f64, rng: &mut impl Rng, size: AsteroidSize) -> Self {
+        let (shape, display_char) = match size {
+            AsteroidSize::Large => (
+                vec![
+                    (0.0, 0.0), (-2.0, -1.0), (-1.0, -2.0), (1.0, -2.0), (2.0, -1.0),
+                    (2.0, 1.0), (1.0, 2.0), (-1.0, 2.0), (-2.0, 1.0),
+                ],
+                '@',
+            ),
+            AsteroidSize::Medium => (
+                vec![
+                    (0.0, 0.0), (-1.0, -1.0), (0.0, -1.0), (1.0, -1.0),
+                    (-1.0, 0.0), (1.0, 0.0), (-1.0, 1.0), (0.0, 1.0), (1.0, 1.0),
+                ],
+                'O',
+            ),
+            AsteroidSize::Small => (vec![(0.0, 0.0)], 'o'),
         };
-        Asteroid { x, y, shape, display_char: '@' }
+        let angle = rng.gen_range(0.0..2.0 * std::f64::consts::PI);
+        let speed = match size {
+            AsteroidSize::Large => rng.gen_range(0.3..0.8),
+            AsteroidSize::Medium => rng.gen_range(0.8..1.5),
+            AsteroidSize::Small => rng.gen_range(1.5..2.5),
+        };
+        let velocity = Vector2D::new(angle.cos() * speed, angle.sin() * speed);
+
+        Asteroid { position: Vector2D::new(x, y), velocity, size, shape, display_char }
     }
 
     fn get_absolute_coords(&self) -> Vec<(u16, u16)> {
         self.shape.iter().map(|&(dx, dy)| {
-            ((self.x as i16 + dx) as u16, (self.y as i16 + dy) as u16)
+            ((self.position.x + dx).round() as u16, (self.position.y + dy).round() as u16)
         }).collect()
     }
 
     fn draw(&self, game_grid: &mut GameGrid) {
         for &(dx, dy) in &self.shape {
-            let draw_x = (self.x as i16 + dx) as u16;
-            let draw_y = (self.y as i16 + dy) as u16;
+            let draw_x = (self.position.x + dx).round() as u16;
+            let draw_y = (self.position.y + dy).round() as u16;
             game_grid.set_char(draw_x, draw_y, self.display_char);
         }
     }
 
-    fn update(&mut self) {
-        self.y += 1;
+    fn update(&mut self, terminal_width: u16, terminal_height: u16) {
+        self.position = self.position.add(self.velocity);
+
+        // Screen wrapping
+        self.position.x = wrap_coordinate(self.position.x, terminal_width as f64);
+        self.position.y = wrap_coordinate(self.position.y, terminal_height as f64);
+    }
+}
+
+// --- Bullet struct ---
+struct Bullet {
+    position: Vector2D,
+    velocity: Vector2D,
+    lifetime: u32,
+    display_char: char,
+}
+
+impl Bullet {
+    fn new(position: Vector2D, velocity: Vector2D) -> Self {
+        Bullet {
+            position,
+            velocity,
+            lifetime: 30, // Bullet lasts for 30 frames
+            display_char: '*'
+        }
+    }
+
+    fn draw(&self, game_grid: &mut GameGrid) {
+        game_grid.set_char(self.position.x.round() as u16, self.position.y.round() as u16, self.display_char);
+    }
+
+    fn update(&mut self, terminal_width: u16, terminal_height: u16) {
+        self.position = self.position.add(self.velocity);
+        self.lifetime -= 1;
+
+        // Screen wrapping
+        self.position.x = wrap_coordinate(self.position.x, terminal_width as f64);
+        self.position.y = wrap_coordinate(self.position.y, terminal_height as f64);
     }
 }
 
@@ -302,9 +442,10 @@ fn main() -> io::Result<()> {
         info!("Debug resolution set to {}x{}", terminal_width, terminal_height);
         stdout_target = OutputTarget::ScreenBuffer(ScreenBuffer::new(terminal_width, terminal_height));
         let mut sim_events = HashMap::new();
-        sim_events.insert(1, Event::Key(KeyCode::Right.into()));
+        sim_events.insert(1, Event::Key(KeyCode::Up.into()));
         sim_events.insert(2, Event::Key(KeyCode::Right.into()));
-        sim_events.insert(3, Event::Key(KeyCode::Left.into()));
+        sim_events.insert(3, Event::Key(KeyCode::Char(' ').into()));
+        sim_events.insert(4, Event::Key(KeyCode::Left.into()));
         sim_events.insert(10, Event::Key(KeyCode::Char('q').into())); // Quit after 10 frames
         simulated_input = Some(SimulatedInput::new(sim_events));
     } else {
@@ -379,8 +520,9 @@ fn main() -> io::Result<()> {
         info!("Title screen cleared.");
     }
 
-    let mut ship = Ship::new(terminal_width / 2, terminal_height - 2);
+    let mut ship = Ship::new(terminal_width as f64 / 2.0, terminal_height as f64 / 2.0);
     let mut asteroids: Vec<Asteroid> = Vec::new();
+    let mut bullets: Vec<Bullet> = Vec::new();
     let mut rng = rand::thread_rng();
 
     let _max_frames: Option<u64> = if !debug_mode_active && args.len() > 1 {
@@ -429,33 +571,56 @@ fn main() -> io::Result<()> {
                         info!("Quit key 'q' pressed. Exiting game loop.");
                         running = false;
                     },
-                    KeyCode::Left | KeyCode::Right => {
-                        ship.update(key_event.code, terminal_width);
-                        info!("Ship moved to x: {}", ship.x);
+                    KeyCode::Up => {
+                        ship.thrust();
+                        info!("Ship thrusting.");
+                    },
+                    KeyCode::Left => {
+                        ship.rotate(-1.0); // Rotate left
+                        info!("Ship rotating left.");
+                    },
+                    KeyCode::Right => {
+                        ship.rotate(1.0); // Rotate right
+                        info!("Ship rotating right.");
+                    },
+                    KeyCode::Char(' ') => {
+                        let bullet_speed = 2.0;
+                        let bullet_velocity = Vector2D::new(ship.angle.cos() * bullet_speed, ship.angle.sin() * bullet_speed);
+                        bullets.push(Bullet::new(ship.position, bullet_velocity));
+                        info!("Bullet fired.");
                     },
                     _ => {},
                 }
             }
         }
 
-        // Generate new asteroids
-        if frame_count % asteroid_spawn_rate == 0 { // Generate a new asteroid every `asteroid_spawn_rate` frames
-            let x = rng.gen_range(0..terminal_width);
-            asteroids.push(Asteroid::new(x, 0, &mut rng));
-            info!("New asteroid spawned at x: {}", x);
+        // Update ship position
+        ship.update(terminal_width, terminal_height);
+
+        // Generate new asteroids (from edges)
+        if frame_count % asteroid_spawn_rate == 0 {
+            let side = rng.gen_range(0..4); // 0: top, 1: right, 2: bottom, 3: left
+            let (x, y) = match side {
+                0 => (rng.gen_range(0.0..terminal_width as f64), 0.0), // Top
+                1 => (terminal_width as f64 - 1.0, rng.gen_range(0.0..terminal_height as f64)), // Right
+                2 => (rng.gen_range(0.0..terminal_width as f64), terminal_height as f64 - 1.0), // Bottom
+                _ => (0.0, rng.gen_range(0.0..terminal_height as f64)), // Left
+            };
+            asteroids.push(Asteroid::new(x, y, &mut rng, AsteroidSize::Large));
+            info!("New asteroid spawned at x: {}, y: {}", x, y);
         }
 
         // Increase difficulty
-        if frame_count % 500 == 0 && asteroid_spawn_rate > 1 { // Increase difficulty every 500 frames
+        if frame_count % 500 == 0 && asteroid_spawn_rate > 1 {
             asteroid_spawn_rate -= 1;
             info!("Difficulty increased. New asteroid spawn rate: {}", asteroid_spawn_rate);
         }
 
-        // Update and draw asteroids
+        // Update asteroids and check for collisions with ship
         asteroids.retain_mut(|asteroid| {
-            asteroid.update();
-            // Collision detection
-            // Collision detection based on geometric shapes
+            asteroid.update(terminal_width, terminal_height);
+
+            // Collision detection (Ship-Asteroid)
             let ship_coords = ship.get_absolute_coords();
             let asteroid_coords = asteroid.get_absolute_coords();
 
@@ -468,21 +633,61 @@ fn main() -> io::Result<()> {
             }
 
             if collision {
-                info!("Collision detected. Game over.");
+                info!("Collision detected between ship and asteroid. Game over.");
                 running = false;
             }
-            let on_screen = asteroid.y < terminal_height;
-            if !on_screen {
-                score += 1;
-                info!("Asteroid went off screen. Score: {}", score);
-            }
-            on_screen // Keep asteroids that are still on screen
+            true // Keep all asteroids for now, will handle removal on bullet collision later
+        });
+
+        // Update and draw bullets
+        bullets.retain_mut(|bullet| {
+            bullet.update(terminal_width, terminal_height);
+
+            // Bullet-asteroid collision
+            let mut hit_asteroid = false;
+            let mut new_asteroids_to_add: Vec<Asteroid> = Vec::new();
+            asteroids.retain_mut(|asteroid| {
+                let asteroid_coords = asteroid.get_absolute_coords();
+                let bullet_pos = (bullet.position.x.round() as u16, bullet.position.y.round() as u16);
+
+                if asteroid_coords.contains(&bullet_pos) {
+                    hit_asteroid = true;
+                    match asteroid.size {
+                        AsteroidSize::Large => {
+                            score += 20;
+                            let new_x = asteroid.position.x;
+                            let new_y = asteroid.position.y;
+                            new_asteroids_to_add.push(Asteroid::new(new_x, new_y, &mut rng, AsteroidSize::Medium));
+                            new_asteroids_to_add.push(Asteroid::new(new_x, new_y, &mut rng, AsteroidSize::Medium));
+                        },
+                        AsteroidSize::Medium => {
+                            score += 50;
+                            let new_x = asteroid.position.x;
+                            let new_y = asteroid.position.y;
+                            new_asteroids_to_add.push(Asteroid::new(new_x, new_y, &mut rng, AsteroidSize::Small));
+                            new_asteroids_to_add.push(Asteroid::new(new_x, new_y, &mut rng, AsteroidSize::Small));
+                        },
+                        AsteroidSize::Small => {
+                            score += 100;
+                        },
+                    }
+                    info!("Bullet hit asteroid. Score: {}", score);
+                    false // Remove asteroid
+                } else {
+                    true // Keep asteroid
+                }
+            });
+            asteroids.extend(new_asteroids_to_add);
+            bullet.lifetime > 0 && !hit_asteroid // Keep bullet if still alive and hasn't hit an asteroid
         });
 
         // Draw game state onto GameGrid
         ship.draw(&mut game_grid);
         for asteroid in &asteroids {
             asteroid.draw(&mut game_grid);
+        }
+        for bullet in &bullets {
+            bullet.draw(&mut game_grid);
         }
 
         // Render GameGrid to stdout
@@ -509,9 +714,11 @@ fn main() -> io::Result<()> {
 
         let controls_text = [
             "Controls:",
-            r"  <- : Move Left",
-            r"  -> : Move Right",
-            r"  q  : Quit",
+            r"  Up Arrow : Thrust",
+            r"  Left Arrow : Rotate Left",
+            r"  Right Arrow: Rotate Right",
+            r"  Spacebar : Fire Laser",
+            r"  q        : Quit",
         ];
         let _controls_box_width = controls_text.iter().map(|s| s.len()).max().unwrap_or(0) as u16;
         let controls_box_height = controls_text.len() as u16;

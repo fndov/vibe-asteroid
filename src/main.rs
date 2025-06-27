@@ -34,8 +34,11 @@ const SCORE_MEDIUM_ASTEROID: u32 = 50;
 const SCORE_SMALL_ASTEROID: u32 = 100;
 
 const BULLET_COOLDOWN: u64 = 10; // Frames between shots
-const MAX_HEALTH: u32 = 5;
+const MAX_HEALTH: u32 = 3;
 const UPGRADE_COLLECTION_RADIUS: f64 = 2.0; // Ship can collect upgrade within this radius
+const TERMINAL_ASPECT_RATIO_COMPENSATION: f64 = 2.0; // Adjust this based on terminal character aspect ratio (height/width)
+
+const INVINCIBILITY_FRAMES: u64 = 60 * 2; // 2 seconds of invincibility
 
 const UPGRADE_BOX_SPAWN_RATE: u64 = 60 * 10; // Every 10 seconds
 
@@ -318,7 +321,7 @@ impl Ship {
 
         // Draw aiming indicator
         let aiming_distance = 3.0;
-        let aim_x = (self.position.x + self.angle.cos() * aiming_distance).round() as u16;
+        let aim_x = (self.position.x + self.angle.cos() * aiming_distance * TERMINAL_ASPECT_RATIO_COMPENSATION).round() as u16;
         let aim_y = (self.position.y + self.angle.sin() * aiming_distance).round() as u16;
         game_grid.set_char(aim_x, aim_y, '●');
     }
@@ -735,6 +738,7 @@ fn main() -> io::Result<()> {
     let mut upgrades: Vec<Upgrade> = Vec::new();
     let mut player_health = MAX_HEALTH;
     let mut last_shot_frame = 0;
+    let mut last_hit_frame = 0;
     let mut rng = rand::thread_rng();
 
     let _max_frames: Option<u64> = if !debug_mode_active && args.len() > 1 {
@@ -761,6 +765,8 @@ fn main() -> io::Result<()> {
 
     let mut game_grid = GameGrid::new(terminal_width, terminal_height);
     let mut minimap = Minimap::new(20, 20, terminal_width); // Example minimap size: 20x20
+
+    let mut current_banner: Option<(String, u64)> = None; // (message, display_until_frame)
 
     while running && (_max_frames.is_none() || frame_count < _max_frames.unwrap()) {
         // Clear game grid and minimap
@@ -883,8 +889,9 @@ fn main() -> io::Result<()> {
                 }
             }
 
-            if collision {
+            if collision && frame_count - last_hit_frame > INVINCIBILITY_FRAMES {
                 player_health = player_health.saturating_sub(1);
+                last_hit_frame = frame_count;
                 info!("Ship hit by asteroid. Health: {}", player_health);
                 if player_health == 0 {
                     info!("Ship health reached 0. Game over.");
@@ -1011,14 +1018,19 @@ fn main() -> io::Result<()> {
                 match upgrade.upgrade_type {
                     UpgradeType::FireRate => {
                         ship.fire_rate_multiplier *= 1.1; // Increase fire rate by 10%
+                        player_health = (player_health + 1).min(MAX_HEALTH); // Health bonus for ship upgrade
+                        current_banner = Some(("Fire Rate Increased!".to_string(), frame_count + 60)); // Display for 1 second
                         info!("Fire rate increased to {}", ship.fire_rate_multiplier);
                     },
                     UpgradeType::BulletSpeed => {
                         ship.bullet_speed_multiplier *= 1.1; // Increase bullet speed by 10%
+                        player_health = (player_health + 1).min(MAX_HEALTH); // Health bonus for ship upgrade
+                        current_banner = Some(("Bullet Speed Increased!".to_string(), frame_count + 60)); // Display for 1 second
                         info!("Bullet speed increased to {}", ship.bullet_speed_multiplier);
                     },
                     UpgradeType::Health => {
                         player_health = (player_health + 1).min(MAX_HEALTH); // Increase health, cap at MAX_HEALTH
+                        current_banner = Some(("Health Restored!".to_string(), frame_count + 60)); // Display for 1 second
                         info!("Health increased to {}", player_health);
                     },
                 }
@@ -1111,6 +1123,18 @@ fn main() -> io::Result<()> {
             stdout_target.execute_move_to(MoveTo(controls_start_x, controls_start_y.saturating_add(i as u16))).map_err(|e| { error!("Failed to move cursor for controls: {}", e); e })?;
             write!(stdout_target, "{}", line).map_err(|e| { error!("Failed to write controls: {}", e); e })?;
             stdout_target.flush().map_err(|e| { error!("Failed to flush stdout after controls: {}", e); e })?;
+
+        // Display upgrade banner
+        if let Some((message, display_until_frame)) = &current_banner {
+            if frame_count < *display_until_frame {
+                let banner_x = terminal_width / 2 - message.len() as u16 / 2;
+                let banner_y = terminal_height / 2 - 5; // A bit above center
+                stdout_target.execute_move_to(MoveTo(banner_x, banner_y)).map_err(|e| { error!("Failed to move cursor for banner: {}", e); e })?;
+                write!(stdout_target, "{}", message).map_err(|e| { error!("Failed to write banner: {}", e); e })?;
+            } else {
+                current_banner = None; // Clear banner after display time
+            }
+        }
         }
 
         stdout_target.flush().map_err(|e| { error!("Failed to flush stdout during game loop: {}", e); e })?;

@@ -1,38 +1,70 @@
-[00:00:00.000] (7fc8639be140) INFO   Starting Vibe-asteroid application.
-[00:00:00.000] (7fc8639be140) INFO   Attempting to enable raw mode.
-[00:00:00.000] (7fc8639be140) INFO   Raw mode enabled.
-[00:00:00.000] (7fc8639be140) INFO   Terminal size: 146x31
-[00:00:00.000] (7fc8639be140) INFO   Attempting to clear screen and hide cursor.
-[00:00:00.000] (7fc8639be140) INFO   Screen cleared and cursor hidden.
-[00:00:00.001] (7fc8639be140) INFO   Title screen displayed. Waiting for key press.
-[00:00:00.839] (7fc8639be140) INFO   Key pressed. Starting game loop.
-[00:00:00.939] (7fc8639be140) INFO   Title screen cleared.
-[00:00:00.990] (7fc8639be140) INFO   New asteroid spawned at x: 145, y: 16.28287303271695
-[00:00:01.785] (7fc8639be140) INFO   Thrusting: Angle = -1.5707963267948966, Thrust Vector = (0.000000000000000003061616997868383, -0.05)
-[00:00:01.785] (7fc8639be140) INFO   Ship thrusting.
-[00:00:02.149] (7fc8639be140) INFO   Ship rotating left.
-[00:00:02.306] (7fc8639be140) INFO   Ship rotating left.
-[00:00:02.753] (7fc8639be140) INFO   Thrusting: Angle = -2.9291892549619973, Thrust Vector = (-0.048876353912920396, -0.010540494683787425)
-[00:00:02.754] (7fc8639be140) INFO   Ship thrusting.
-[00:00:03.353] (7fc8639be140) INFO   Thrusting: Angle = -3.389587538894201, Thrust Vector = (-0.048470327347221814, 0.012273034133952447)
-[00:00:03.353] (7fc8639be140) INFO   Ship thrusting.
-[00:00:03.539] (7fc8639be140) INFO   Ship rotating right.
-[00:00:03.694] (7fc8639be140) INFO   Ship rotating right.
-[00:00:03.848] (7fc8639be140) INFO   Ship rotating right.
-[00:00:05.387] (7fc8639be140) INFO   Bullet fired.
-[00:00:05.954] (7fc8639be140) INFO   New asteroid spawned at x: 0, y: 13.15562078289181
-[00:00:05.987] (7fc8639be140) INFO   Bullet fired.
-[00:00:06.027] (7fc8639be140) INFO   Bullet fired.
-[00:00:06.068] (7fc8639be140) INFO   Bullet fired.
-[00:00:06.107] (7fc8639be140) INFO   Bullet fired.
-[00:00:06.148] (7fc8639be140) INFO   Bullet fired.
-[00:00:06.188] (7fc8639be140) INFO   Bullet fired.
-[00:00:06.227] (7fc8639be140) INFO   Bullet fired.
-[00:00:06.268] (7fc8639be140) INFO   Bullet fired.
-[00:00:06.307] (7fc8639be140) INFO   Bullet fired.
-[00:00:06.901] (7fc8639be140) INFO   Ship rotating right.
-[00:00:07.367] (7fc8639be140) INFO   Thrusting: Angle = 0.0405441048916068, Thrust Vector = (0.049958910018152496, 0.0020266498953056575)
-[00:00:07.368] (7fc8639be140) INFO   Ship thrusting.
-[00:00:07.507] (7fc8639be140) INFO   Ship rotating left.
-[00:00:08.019] (7fc8639be140) INFO   Ship rotating left.
-[00:00:10.965] (7fc8639be140) INFO   New asteroid spawned at x: 0, y: 6.064815458473762
+[00:00:00.000] (7fcb203c7140) INFO   Starting Vibe-asteroid application.
+[00:00:00.000] (7fcb203c7140) INFO   Attempting to enable raw mode.
+[00:00:00.000] (7fcb203c7140) INFO   Raw mode enabled.
+[00:00:00.000] (7fcb203c7140) INFO   Terminal size: 146x31
+[00:00:00.000] (7fcb203c7140) INFO   Attempting to clear screen and hide cursor.
+[00:00:00.000] (7fcb203c7140) INFO   Screen cleared and cursor hidden.
+[00:00:00.000] (7fcb203c7140) INFO   Title screen displayed. Waiting for key press.
+[00:00:00.508] (7fcb203c7140) INFO   Key pressed. Starting game loop.
+[00:00:00.608] (7fcb203c7140) INFO   Title screen cleared.
+[00:00:00.658] (7fcb203c7140) INFO   New asteroid spawned at x: 145, y: 17.411583925016156
+[00:00:00.659] (7fcb203c7140) INFO   New upgrade box spawned at x: 77.52863246601777, y: 11.779197278519558
+[00:00:00.996] (7fcb203c7140) INFO   Ship rotating left.
+[00:00:01.175] (7fcb203c7140) INFO   Ship rotating left.
+[00:00:01.729] (7fcb203c7140) INFO   Ship rotating right.
+[00:00:01.890] (7fcb203c7140) INFO   Ship rotating right.
+[00:00:02.031] (7fcb203c7140) INFO   Ship rotating right.
+[00:00:02.201] (7fcb203c7140) INFO   Ship rotating right.
+[00:00:02.500] (7fcb203c7140) INFO   Bullet fired.
+[00:00:02.602] (7fcb203c7140) INFO   Bullet hit upgrade box. Hits remaining: 2
+[00:00:02.673] (7fcb203c7140) INFO   Ship rotating left.
+[00:00:02.923] (7fcb203c7140) INFO   Bullet fired.
+[00:00:03.024] (7fcb203c7140) INFO   Bullet hit upgrade box. Hits remaining: 1
+[00:00:03.458] (7fcb203c7140) INFO   Ship rotating left.
+[00:00:03.481] (7fcb203c7140) INFO   Bullet fired.
+[00:00:03.583] (7fcb203c7140) INFO   Bullet hit upgrade box. Hits remaining: 0
+[00:00:03.583] (7fcb203c7140) INFO   Upgrade box destroyed. Spawned 3 upgrades.
+[00:00:04.113] (7fcb203c7140) INFO   Thrusting: Angle = -1.358624806371788, Thrust Vector = (0.010529161039323963, -0.048878796709902576)
+[00:00:04.113] (7fcb203c7140) INFO   Ship thrusting.
+[00:00:04.298] (7fcb203c7140) INFO   Thrusting: Angle = -1.4315905922452954, Thrust Vector = (0.006937828817839581, -0.049516325906657846)
+[00:00:04.298] (7fcb203c7140) INFO   Ship thrusting.
+[00:00:04.480] (7fcb203c7140) INFO   Thrusting: Angle = -1.4794634443569032, Thrust Vector = (0.004560297843692194, -0.049791602540757984)
+[00:00:04.480] (7fcb203c7140) INFO   Ship thrusting.
+[00:00:04.631] (7fcb203c7140) INFO   Ship rotating right.
+[00:00:04.992] (7fcb203c7140) INFO   Thrusting: Angle = -0.9726023105144123, Thrust Vector = (0.028157550535468413, -0.041317700176105435)
+[00:00:04.992] (7fcb203c7140) INFO   Ship thrusting.
+[00:00:05.245] (7fcb203c7140) INFO   New asteroid spawned at x: 79.24548832418795, y: 0
+[00:00:05.280] (7fcb203c7140) INFO   Thrusting: Angle = -0.7843325005887799, Thrust Vector = (0.03539299584670194, -0.03531764212111759)
+[00:00:05.280] (7fcb203c7140) INFO   Ship thrusting.
+[00:00:05.701] (7fcb203c7140) INFO   Ship rotating right.
+[00:00:06.155] (7fcb203c7140) INFO   Thrusting: Angle = 0.009732550076793675, Thrust Vector = (0.049997631955417426, 0.0004866198214445992)
+[00:00:06.155] (7fcb203c7140) INFO   Ship thrusting.
+[00:00:06.316] (7fcb203c7140) INFO   Thrusting: Angle = 0.15398866932061936, Thrust Vector = (0.04940835774071688, 0.007669040706981748)
+[00:00:06.316] (7fcb203c7140) INFO   Ship thrusting.
+[00:00:06.581] (7fcb203c7140) INFO   Ship rotating right.
+[00:00:06.797] (7fcb203c7140) INFO   Ship rotating right.
+[00:00:07.019] (7fcb203c7140) INFO   Thrusting: Angle = 1.4390373372578151, Thrust Vector = (0.006568904408493271, 0.049566616738204734)
+[00:00:07.020] (7fcb203c7140) INFO   Ship thrusting.
+[00:00:07.372] (7fcb203c7140) INFO   Thrusting: Angle = 1.9556101842371576, Thrust Vector = (-0.01876933068056736, 0.04634341620773671)
+[00:00:07.372] (7fcb203c7140) INFO   Ship thrusting.
+[00:00:07.566] (7fcb203c7140) INFO   Thrusting: Angle = 2.1184789850932346, Thrust Vector = (-0.026035511831931646, 0.04268667384148533)
+[00:00:07.566] (7fcb203c7140) INFO   Ship thrusting.
+[00:00:07.732] (7fcb203c7140) INFO   Thrusting: Angle = 2.2253372053349065, Thrust Vector = (-0.030439753690825556, 0.03966637612943577)
+[00:00:07.732] (7fcb203c7140) INFO   Ship thrusting.
+[00:00:07.890] (7fcb203c7140) INFO   Thrusting: Angle = 2.295446883635467, Thrust Vector = (-0.033143692208896146, 0.0374365552202918)
+[00:00:07.890] (7fcb203c7140) INFO   Ship thrusting.
+[00:00:08.044] (7fcb203c7140) INFO   Thrusting: Angle = 2.331694973608839, Thrust Vector = (-0.03447862692098906, 0.03621083105430264)
+[00:00:08.044] (7fcb203c7140) INFO   Ship thrusting.
+[00:00:08.196] (7fcb203c7140) INFO   Upgrade collected: Shield
+[00:00:08.196] (7fcb203c7140) INFO   Shield count increased to 1
+[00:00:08.196] (7fcb203c7140) INFO   Upgrade collected: Health
+[00:00:08.196] (7fcb203c7140) INFO   Health increased to 1
+[00:00:08.196] (7fcb203c7140) INFO   Upgrade collected: Health
+[00:00:08.196] (7fcb203c7140) INFO   Health increased to 1
+[00:00:08.376] (7fcb203c7140) INFO   Thrusting: Angle = 2.382565564465179, Thrust Vector = (-0.036275296337632254, 0.034410795916644595)
+[00:00:08.376] (7fcb203c7140) INFO   Ship thrusting.
+[00:00:09.030] (7fcb203c7140) INFO   Thrusting: Angle = 2.4173488917147137, Thrust Vector = (-0.03745003480950764, 0.03312846046478264)
+[00:00:09.031] (7fcb203c7140) INFO   Ship thrusting.
+[00:00:09.175] (7fcb203c7140) INFO   Thrusting: Angle = 2.42056153749861, Thrust Vector = (-0.0375562713727893, 0.033007976014493935)
+[00:00:09.175] (7fcb203c7140) INFO   Ship thrusting.
+[00:00:09.986] (7fcb203c7140) INFO   New asteroid spawned at x: 131.92262491911035, y: 30

@@ -315,6 +315,12 @@ impl Ship {
             let char_to_draw = Ship::get_rotated_char(dx, dy, self.angle);
             game_grid.set_char(draw_x, draw_y, char_to_draw);
         }
+
+        // Draw aiming indicator
+        let aiming_distance = 3.0;
+        let aim_x = (self.position.x + self.angle.cos() * aiming_distance).round() as u16;
+        let aim_y = (self.position.y + self.angle.sin() * aiming_distance).round() as u16;
+        game_grid.set_char(aim_x, aim_y, '●');
     }
 
     fn update(&mut self, terminal_width: u16, terminal_height: u16) {

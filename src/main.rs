@@ -494,18 +494,96 @@ impl Bullet {
     }
 }
 
+struct Minimap {
+    buffer: Vec<Vec<char>>,
+    width: u16,
+    height: u16,
+    x_offset: u16,
+    y_offset: u16,
+}
+
+impl Minimap {
+    fn new(width: u16, height: u16, screen_width: u16) -> Self {
+        Minimap {
+            buffer: vec![vec![' '; width as usize]; height as usize],
+            width,
+            height,
+            x_offset: screen_width - width, // Top-right corner
+            y_offset: 0,
+        }
+    }
+
+    fn clear(&mut self) {
+        self.buffer = vec![vec![' '; self.width as usize]; self.height as usize];
+    }
+
+    fn set_char(&mut self, x: u16, y: u16, c: char) {
+        if y < self.height && x < self.width {
+            self.buffer[y as usize][x as usize] = c;
+        }
+    }
+
+    fn draw_circle(&mut self, center_x: u16, center_y: u16, radius: u16, character: char) {
+        for y in 0..self.height {
+            for x in 0..self.width {
+                let dx = x as i32 - center_x as i32;
+                let dy = y as i32 - center_y as i32;
+                if (dx * dx + dy * dy) <= (radius * radius) as i32 {
+                    self.set_char(x, y, character);
+                }
+            }
+        }
+    }
+
+    fn render(&self, stdout: &mut OutputTarget) -> io::Result<()> {
+        for y in 0..self.height {
+            stdout.execute_move_to(MoveTo(self.x_offset, self.y_offset + y))?;
+            write!(stdout, "{}", self.buffer[y as usize].iter().collect::<String>())?;
+        }
+        Ok(())
+    }
+}
+
+struct Particle {
+    position: Vector2D,
+    velocity: Vector2D,
+    lifetime: u32,
+    display_char: char,
+}
+
+impl Particle {
+    fn new(position: Vector2D, velocity: Vector2D, lifetime: u32, display_char: char) -> Self {
+        Particle {
+            position,
+            velocity,
+            lifetime,
+            display_char,
+        }
+    }
+
+    fn draw(&self, game_grid: &mut GameGrid) {
+        game_grid.set_char(self.position.x.round() as u16, self.position.y.round() as u16, self.display_char);
+    }
+
+    fn update(&mut self) {
+        self.position = self.position.add(self.velocity);
+        self.lifetime -= 1;
+    }
+}
+
 // --- Main function (modified for debug mode and simulated rendering/input) ---
 fn main() -> io::Result<()> {
     simple_logging::log_to_file("vibe-asteroid.log", log::LevelFilter::Info).unwrap();
     info!("Starting Vibe-asteroid application.");
 
-    let mut stdout_target: OutputTarget;
+    let mut stdout_target;
     let mut simulated_input: Option<SimulatedInput> = None;
-
-    let (terminal_width, terminal_height);
 
     let args: Vec<String> = env::args().collect();
     let debug_mode_active = args.len() > 1 && args[1] == "--debug";
+
+    let mut terminal_width;
+    let mut terminal_height;
 
     if debug_mode_active {
         info!("Debug mode enabled.");
@@ -601,6 +679,7 @@ fn main() -> io::Result<()> {
     let mut ship = Ship::new(terminal_width as f64 / 2.0, terminal_height as f64 / 2.0);
     let mut asteroids: Vec<Asteroid> = Vec::new();
     let mut bullets: Vec<Bullet> = Vec::new();
+    let mut particles: Vec<Particle> = Vec::new();
     let mut rng = rand::thread_rng();
 
     let _max_frames: Option<u64> = if !debug_mode_active && args.len() > 1 {
@@ -626,54 +705,83 @@ fn main() -> io::Result<()> {
     let mut game_speed_multiplier = INITIAL_GAME_SPEED_MULTIPLIER;
 
     let mut game_grid = GameGrid::new(terminal_width, terminal_height);
+    let mut minimap = Minimap::new(20, 20, terminal_width); // Example minimap size: 20x20
 
     while running && (_max_frames.is_none() || frame_count < _max_frames.unwrap()) {
-        // Clear game grid
+        // Clear game grid and minimap
         game_grid.clear();
+        minimap.clear();
 
         // Update game state
-        let mut current_key_event: Option<Event> = None;
+        let mut current_event: Option<Event> = None;
         if debug_mode_active {
             if let Some(sim_input) = &mut simulated_input {
                 if sim_input.poll(frame_count)? {
-                    current_key_event = Some(sim_input.read()?);
+                    current_event = Some(sim_input.read()?);
                 }
             }
         } else {
             if event::poll(Duration::from_millis(50)).map_err(|e| { error!("Failed to poll event: {}", e); e })? {
-                current_key_event = Some(event::read().map_err(|e| { error!("Failed to read event: {}", e); e })?);
+                current_event = Some(event::read().map_err(|e| { error!("Failed to read event: {}", e); e })?);
             }
         }
 
-        if let Some(key_event) = current_key_event {
-            if let Event::Key(key_event) = key_event {
-                match key_event.code {
-                    KeyCode::Char('q') => {
-                        info!("Quit key 'q' pressed. Exiting game loop.");
-                        running = false;
-                    },
-                    KeyCode::Up => {
-                        ship.thrust();
-                        info!("Ship thrusting.");
-                    },
-                    KeyCode::Left => {
-                        ship.rotate(-1.0); // Rotate left
-                        info!("Ship rotating left.");
-                    },
-                    KeyCode::Right => {
-                        ship.rotate(1.0); // Rotate right
-                        info!("Ship rotating right.");
-                    },
-                    KeyCode::Char(' ') => {
-                        let bullet_speed = BULLET_SPEED;
-                        let bullet_velocity = Vector2D::new(ship.angle.cos() * bullet_speed, ship.angle.sin() * bullet_speed);
-                        bullets.push(Bullet::new(ship.position, bullet_velocity));
-                        info!("Bullet fired.");
-                    },
-                    _ => {},
-                }
+        let (mut current_terminal_width, mut current_terminal_height) = (terminal_width, terminal_height);
+
+        let (mut current_terminal_width, mut current_terminal_height) = (terminal_width, terminal_height);
+
+        if let Some(event) = current_event {
+            match event {
+                Event::Key(key_event) => {
+                    match key_event.code {
+                        KeyCode::Char('q') => {
+                            info!("Quit key 'q' pressed. Exiting game loop.");
+                            running = false;
+                        },
+                        KeyCode::Up => {
+                            ship.thrust();
+                            // Booster smoke particles
+                            let smoke_velocity = Vector2D::new(-ship.angle.cos() * 0.5, -ship.angle.sin() * 0.5);
+                            particles.push(Particle::new(ship.position, smoke_velocity, 10, '.'));
+                            info!("Ship thrusting.");
+                        },
+                        KeyCode::Left => {
+                            ship.rotate(-1.0); // Rotate left
+                            info!("Ship rotating left.");
+                        },
+                        KeyCode::Right => {
+                            ship.rotate(1.0); // Rotate right
+                            info!("Ship rotating right.");
+                        },
+                        KeyCode::Char(' ') => {
+                            let bullet_speed = BULLET_SPEED;
+                            let bullet_velocity = Vector2D::new(ship.angle.cos() * bullet_speed, ship.angle.sin() * bullet_speed);
+                            bullets.push(Bullet::new(ship.position, bullet_velocity));
+                            info!("Bullet fired.");
+                        },
+                        _ => {},
+                    }
+                },
+                Event::Resize(new_width, new_height) => {
+                    current_terminal_width = new_width;
+                    current_terminal_height = new_height;
+                    minimap = Minimap::new(20, 20, current_terminal_width); // Re-initialize minimap with new screen width
+                    info!("Terminal resized to {}x{}", current_terminal_width, current_terminal_height);
+                },
+                _ => {},
             }
         }
+
+        // Update terminal_width and terminal_height for the current frame
+        terminal_width = current_terminal_width;
+        terminal_height = current_terminal_height;
+        game_grid = GameGrid::new(terminal_width, terminal_height); // Re-initialize GameGrid with new dimensions
+        minimap = Minimap::new(20, 20, terminal_width); // Re-initialize minimap with new screen width
+
+        // Update terminal_width and terminal_height for the current frame
+        terminal_width = current_terminal_width;
+        terminal_height = current_terminal_height;
+        game_grid = GameGrid::new(terminal_width, terminal_height); // Re-initialize GameGrid with new dimensions
 
         // Update ship position
         ship.update(terminal_width, terminal_height);
@@ -729,6 +837,13 @@ fn main() -> io::Result<()> {
         bullets.retain_mut(|bullet| {
             bullet.update(terminal_width, terminal_height);
 
+            // Dynamic bullet character
+            bullet.display_char = match bullet.lifetime {
+                20..=30 => '*',
+                10..=19 => '+',
+                _ => '.',
+            };
+
             // Bullet-asteroid collision
             let mut hit_asteroid = false;
             let mut new_asteroids_to_add: Vec<Asteroid> = Vec::new();
@@ -758,6 +873,15 @@ fn main() -> io::Result<()> {
                         },
                     }
                     info!("Bullet hit asteroid. Score: {}", score);
+
+                    // Explosion particles
+                    for _ in 0..5 {
+                        let angle = rng.gen_range(0.0..2.0 * std::f64::consts::PI);
+                        let speed = rng.gen_range(0.5..1.5);
+                        let explosion_velocity = Vector2D::new(angle.cos() * speed, angle.sin() * speed);
+                        particles.push(Particle::new(asteroid.position, explosion_velocity, 15, '#'));
+                    }
+
                     false // Remove asteroid
                 } else {
                     true // Keep asteroid
@@ -765,6 +889,12 @@ fn main() -> io::Result<()> {
             });
             asteroids.extend(new_asteroids_to_add);
             bullet.lifetime > 0 && !hit_asteroid // Keep bullet if still alive and hasn't hit an asteroid
+        });
+
+        // Update particles
+        particles.retain_mut(|particle| {
+            particle.update();
+            particle.lifetime > 0
         });
 
         // Draw game state onto GameGrid
@@ -775,6 +905,35 @@ fn main() -> io::Result<()> {
         for bullet in &bullets {
             bullet.draw(&mut game_grid);
         }
+        for particle in &particles {
+            particle.draw(&mut game_grid);
+        }
+
+        // Draw minimap
+        let minimap_center_x = minimap.width / 2;
+        let minimap_center_y = minimap.height / 2;
+        minimap.set_char(minimap_center_x, minimap_center_y, 'A'); // Ship always in center, facing up
+
+        for asteroid in &asteroids {
+            let relative_x = asteroid.position.x - ship.position.x;
+            let relative_y = asteroid.position.y - ship.position.y;
+
+            // Rotate asteroid position relative to ship's angle
+            let rotated_x = relative_x * ship.angle.cos() - relative_y * ship.angle.sin();
+            let rotated_y = relative_x * ship.angle.sin() + relative_y * ship.angle.cos();
+
+            // Scale and translate to minimap coordinates
+            let minimap_asteroid_x = (minimap_center_x as f64 + rotated_x * 0.1).round() as u16;
+            let minimap_asteroid_y = (minimap_center_y as f64 + rotated_y * 0.1).round() as u16;
+
+            // Draw asteroid on minimap if within bounds
+            if minimap_asteroid_x < minimap.width && minimap_asteroid_y < minimap.height {
+                let distance = (relative_x.powi(2) + relative_y.powi(2)).sqrt();
+                let display_char = if distance < 10.0 { '@' } else if distance < 20.0 { 'O' } else { 'o' };
+                minimap.set_char(minimap_asteroid_x, minimap_asteroid_y, display_char);
+            }
+        }
+        minimap.render(&mut stdout_target)?;
 
         // Render GameGrid to stdout
         if !debug_mode_active {
